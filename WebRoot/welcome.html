@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" style="background:#f3f3f3 ;height:100%;">
+	<head>
+<style>
+body {padding: 0; margin: 0;}
+body,html{height: 100%;}
+#outer {height: 100%; overflow: hidden; position: relative;width: 100%; background:#f3f3f3;}
+#outer[id] {display: table; position: static;}
+#middle {position: absolute; top: 50%;} /* for explorer only*/
+#middle[id] {display: table-cell; vertical-align: middle; position: static;}
+#inner {position: relative; top: -50%;margin: 0 auto;text-align: center; font-size: 90px;color: #dedede;font-weight: bold;} /* for explorer only */
+</style>
+ 
+</head>
+
+<body>
+
+<div id="outer">
+  <div id="middle">
+      <div id="inner" class="greenBorder">
+       Welcome
+      </div>
+  </div>
+</div>
+
+</body>
+</html>

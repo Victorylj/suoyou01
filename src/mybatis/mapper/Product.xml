@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="mybatis.mapper.Product">
+
+	 <select id="getTaskTypeInfo" resultType="java.util.HashMap" parameterType="java.util.Map">
+		select a.product_id id,a.product_name,ifnull(a.cp_name,'') cp_name,ifnull(a.product_code,'') product_code,
+			SUM(b.is_pop) sumPop,COUNT(b.is_pop) countPop,
+			SUM(b.is_loading) sumLoading,COUNT(b.is_loading) countLoading,
+			SUM(b.is_tht) sumTht,COUNT(b.is_tht) countTht
+				from cp_product a LEFT JOIN cp_subchannel b ON a.product_id = b.product_id 
+			where 1=1
+		<if test="cp_id != null and cp_id !='' ">  
+			AND a.cp_id=#{cp_id}  
+		</if>
+		<if test="product_id != null and product_id !='' ">  
+			AND a.product_id=#{product_id}  
+		</if>
+		 GROUP BY a.product_id order by a.product_id desc
+ 	 </select>
+	 <select id="getTaskTypeInfo2" resultType="java.util.HashMap" parameterType="java.util.Map">
+		SELECT a.id,a.subchannel_id product_code,a.name product_name,a.product_name cp_name,IFNULL(a.is_pop,0) isPop,IFNULL(a.is_loading,0) isLoading,IFNULL(a.is_tht,0) isTht
+	 FROM cp_subchannel a where 1=1
+	 
+	 <if test="id != null and id !='' ">  
+			AND  a.product_id =#{id}
+		</if>
+		
+	 <if test="ccp_id != null and ccp_id !='' ">  
+			AND  a.subchannel_id =#{ccp_id}
+		</if>
+	 </select>
+	 <select id="getThtlist" resultType="java.util.HashMap" parameterType="java.util.Map">
+		SELECT a.id sub_id, b.dater,a.product_name,a.cp_name,a.subchannel_id,b.initnum,a.is_tht FROM cp_subchannel a left join sp_cp_today_inits b
+		 ON a.subchannel_id=b.ccp_id where 1=1
+		<if test="cp_id != null and cp_id !='' ">  
+			AND a.cp_id=#{cp_id}  
+		</if>
+		<if test="product_id != null and product_id !='' ">  
+			AND a.product_id=#{product_id}  
+		</if>
+		<if test="ccp_id != null and ccp_id !='' ">  
+			AND a.subchannel_id=#{ccp_id}  
+		</if>
+		<if test="product_code != null and product_code !='' ">  
+			AND a.product_code=#{product_code}  
+		</if>
+		<if test="tag != 2  ">  
+		AND a.is_tht=#{tag}
+		</if>
+		order by b.initnum desc
+	 </select>
+	 <select id="seachCprodList" resultType="SearchBean" parameterType="java.util.Map">
+		SELECT  a.cp_id id,a.product_code name  FROM cp_product a where a.product_code like #{searchText}
+	 </select>
+	 <select id="seachCompanyList" resultType="SearchBean" parameterType="java.util.Map">
+		SELECT   distinct a.cp_name as name,a.cp_id id  FROM cp_product a where a.cp_name like #{searchText}
+	 </select>
+	 <!-- <select id="getTasById" resultType="java.util.HashMap" parameterType="java.util.Map">
+	 	select cps_id from subchannel_status where cps_id = #{id}
+	 </select>
+	 <insert id="saveSubstate" parameterType="java.util.Map">
+		 insert into subchannel_status (cps_id,isPop,isLoding,isTht) values (#{id},#{isPop},#{isLoading},#{isTht})
+	 </insert> -->
+	 <update id="updateSubstate" parameterType="java.util.Map">
+		update cp_subchannel set is_pop=#{isPop},is_loading=#{isLoading} where id=#{id}
+	 </update>
+	 <update id="changgeTht" parameterType="java.util.Map">
+		update cp_subchannel set is_tht=#{tag} where id=#{id}
+	 </update>
+	 <update id="updateSubtht" parameterType="java.util.Map">
+		update cp_subchannel set is_tht=#{tag},update_time=now() where id in
+			<foreach collection="ids" item="ids" index="index" open="(" separator="," close=")">
+        		#{ids}
+    		</foreach>
+	 </update>
+	 
+</mapper>

@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="mybatis.mapper.Bussiness">
+
+	<!-- SJM: SpFeecodeGroup 计费代码分组管理-->
+	<select id="listSpFeecodeGroup" parameterType="SpFeecodeGroup" resultType="SpFeecodeGroup">
+		select * from sp_feecode_group where 1=1
+		<if test="g_id != null and g_id !='' ">  
+			and g_id=#{g_id}
+		</if>
+		<if test="g_name != null and g_name !='' ">  
+			and g_name like #{g_name}
+		</if>
+		
+	</select>
+	
+	<insert id="addSpFeecodeGroup" parameterType="SpFeecodeGroup">
+		 insert into sp_feecode_group(g_name,g_op,g_interval,remarks,create_name,create_time,update_name,update_time)
+		 values(#{g_name},#{g_op},#{g_interval},#{remarks},#{create_name},#{create_time},#{update_name},#{update_time})
+	</insert>
+	
+	<update id="updSpFeecodeGroup" parameterType="SpFeecodeGroup">
+		update sp_feecode_group set g_name=#{g_name},g_op=#{g_op},g_interval=#{g_interval},remarks=#{remarks},
+		update_time=#{update_time},update_name=#{update_name}
+		where g_id=#{g_id}
+	</update>
+	
+	<delete id="delSpFeecodeGroup" parameterType="SpFeecodeGroup">
+		delete from sp_feecode_group where g_id=#{g_id}
+	</delete>
+	
+	<!-- sjm: end -->
+	
+	<!-- SJM: cp_chstatus 渠道产品状态管理-->
+	<insert id="addCpStatus" parameterType="Channel">
+		 insert into cp_chstatus(chid,ccpid,status)
+		 values(#{ch_id},#{public_key},#{tag})
+	</insert>
+	
+	<update id="updCpStatus" parameterType="Channel">
+		 update cp_chstatus set status=#{tag} where ccpid=#{public_key}
+	</update>
+		
+	<!-- sjm: end -->
+	
+	
+	<!-- SJM: platform_black_mobile 黑名单用户手机号管理-->
+	<select id="getMobileUser" parameterType="MobileUser" resultType="MobileUser">
+		select mobile from platform_black_mobile 
+		<if test="mobile != null and mobile !='' ">  
+			where mobile=#{mobile}
+		</if>
+	</select>
+	
+	<insert id="addMobileUser" parameterType="MobileUser">
+		 insert IGNORE into platform_black_mobile (mobile)
+		 values(#{mobile})
+	</insert>
+	<insert id="addMobileUserinfo" parameterType="MobileUser">
+		 insert IGNORE into platform_black_mobileinfo (mobile,dater,create_time)
+		 values (#{mobile},#{dater},now())
+	</insert>
+	
+	<delete id="delMobileUser" parameterType="MobileUser">
+		delete from platform_black_mobile where mobile=#{mobile}
+	</delete>
+		
+	<!-- sjm: end -->
+	
+	
+	<!-- SJM: c.ch_name, m.ccp_id, m.dater, m.cp, m.feecode_number, m.sp_id, m.command, m.succ_calls, m.succ_users, s.succ_users-->
+	<!-- SELECT sp_id,cp_id,ch_name, ccp_id,dater,feecode_number ,command, succ_calls , succ_num ,rep_users income_calls FROM  sp_cp_smsreport_stat WHERE  dater=#{start_time} -->
+	<select id="listCallAllDate" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		SELECT a.op,a.sp_id,a.cp_id,a.ch_name, a.ccp_id,dater,a.feecode_number ,a.command, a.succ_calls , a.succ_num ,a.rep_users income_calls,ifnull(c.status,1)status FROM  sp_cp_smsreport_stat a
+		LEFT JOIN cp_chstatus c on c.chid=a.cp_id and c.ccpid=a.ccp_id 
+		WHERE dater=#{start_time} 
+		<if test="op != null and op !='' ">  
+			and op=#{op}
+			</if>
+	</select>
+	
+	<select id="listSumAllDate" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		SELECT DISTINCT dater ,spnumber feecode_number,cmd command,succ_num,rep_users income_calls FROM sdk_sms_report_his WHERE <![CDATA[ op<4]]>  AND dater=#{start_time}
+	</select>
+	
+	<!-- select s.sp_id,s.command,s.feecode_number,s.rate,(s.fee) rates  from sp_cp_rate_stat s where dater=#{start_time} and dtype=2 -->
+	<select id="listRecDate" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		select a.command,a.feecode_number,b.rate,b.rates,a.succ_num,ROUND(a.succ_num/a.succ_calls,2) rateis,ROUND(b.income_calls/a.succ_num,2) ratesp,b.income_calls,c.command_share from (
+			SELECT dater,feecode_number,sp_id,command ,SUM(succ_calls) succ_calls, SUM(succ_num) succ_num ,SUM(rep_users) AS rep_users FROM  sp_cp_smsreport_stat
+			WHERE  dater=#{start_time} 
+			<if test="op != null and op !='' ">  
+			and op=#{op}
+			</if>
+			GROUP BY feecode_number,command
+		)a LEFT  JOIN(
+			select sp_id,command,feecode_number,rate,fee rates,income_calls from sp_cp_rate_stat s where dater=#{start_time} and dtype=2
+		)b on a.command=b.command and a.feecode_number=b.feecode_number and a.sp_id=b.sp_id LEFT JOIN (
+			select c.command, f.feecode_number, f.sp_id, c.command_share from sp_command c,sp_feecode f WHERE c.feecode_id=f.feecode_id GROUP BY feecode_number,command,sp_id
+		)c ON c.command=b.command and c.feecode_number=b.feecode_number and c.sp_id=b.sp_id
+	</select>
+
+	<select id="listInitDate" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		select cp_id,ccp_id,initnum from sp_cp_call_stat 
+		where dater=#{start_time} 
+	</select>
+	
+	<select id="listInitDateOp" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		select cp_id,ccp_id,initnum from sp_cp_init_stat 
+		where 1=1 
+		<if test="op != null and op !='' ">  
+			and op=#{op}
+		</if>	
+ and dater=#{start_time} 
+	
+	</select>
+	
+	
+	<select id="listCallAllDate1" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		SELECT ifnull(m.ccp_id,m.cp) ccp_id,c.ch_name, m.dater, m.cp cp_id,m.fee, m.feecode_number, m.sp_id,m.sp_name, m.command, m.succ_calls, m.succ_users, s.succ_num FROM(
+				SELECT SUBSTR(savetime,1,10) dater,cp,sp_id,sp_name, ccp_id,feecode_number,fee,command,SUM(num) AS succ_calls,COUNT(DISTINCT imsi) AS succ_users
+				FROM mobile_filter_log WHERE check_stat=0 AND savetime between #{start_time} and #{end_time}
+				GROUP BY ccp_id,cp,sp_id,feecode_number, command
+			) m LEFT OUTER JOIN(
+				SELECT cpinfo_id,ccp_id,spnumber,cmd,COUNT(DISTINCT mobile_imsi) AS succ_num
+				FROM sdk_sms_report_log WHERE create_time between #{start_time} and #{end_time}
+				GROUP BY cpinfo_id,ccp_id,cmd,spnumber
+			) s on m.ccp_id=s.ccp_id and m.cp=s.cpinfo_id and m.command=s.cmd and m.feecode_number=s.spnumber
+			LEFT OUTER JOIN ch_company c on c.ch_id=m.cp
+	</select>
+	
+	<select id="listSumAllDate1" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		SELECT spnumber,cmd,COUNT(DISTINCT mobile_imsi) AS succ_num
+			FROM sdk_sms_report_log WHERE  create_time between #{start_time} and #{end_time}
+			GROUP BY cmd,spnumber
+	</select>
+	
+	<!-- select s.sp_id,s.command,s.feecode_number,s.rate,(s.fee) rates  from sp_cp_rate_stat s where dater=#{start_time} and dtype=2 -->
+	<select id="listRecDate1" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		select m.feecode_number,m.sp_id,m.sp_name, m.command, m.succ_calls, m.succ_users, d.income_calls, ROUND(d.income_calls/m.succ_calls,2) AS rate,(d.income_calls*c.command_share) rates FROM(
+				SELECT cp,sp_id,sp_name,ccp_id,feecode_number, command,SUM(num) AS succ_calls,COUNT(DISTINCT imsi) AS succ_users
+				FROM mobile_filter_log WHERE check_stat=0 AND savetime between #{start_time} and #{end_time}
+				GROUP BY sp_id,feecode_number, command
+			) m LEFT OUTER JOIN(
+				SELECT sp_id,spnumber, msg,COUNT(DISTINCT mobile, linkid)  AS income_calls,COUNT(DISTINCT mobile) AS income_users
+				FROM sp_rec_data_detail WHERE status_code=1 AND savetime between #{start_time} and #{end_time}
+				GROUP BY sp_id,spnumber, msg
+			) d on m.sp_id=d.sp_id AND m.feecode_number = d.spnumber AND m.command =d.msg LEFT OUTER JOIN(
+				select c.command, f.feecode_number, f.sp_id, c.command_share from sp_command c,sp_feecode f WHERE c.feecode_id=f.feecode_id  GROUP BY feecode_number,command,sp_id
+			) c on c.command=m.command and c.feecode_number=m.feecode_number and c.sp_id=m.sp_id 
+	</select>
+	
+	<select id="listInitDate1" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		SELECT a.cpinfo_id cp_id,IFNULL(a.ccp_id,a.cpinfo_id) AS ccp_id , COUNT(DISTINCT a.mobile_imsi ) AS initnum 
+			FROM sdk_init_log a 
+			WHERE SUBSTR(a.create_time,1,10)= create_time between #{start_time} and #{end_time}
+			GROUP BY a.cpinfo_id ,a.ccp_id
+	</select>
+	
+	<!-- SJM: end -->
+	
+	<!-- SJM: sdk状态sdk_sms_report_log 分渠道产品统计收入-->
+	<select id="listrecalldate" parameterType="RecCallAllDate" resultType="RecCallAllDate">
+		SELECT cpinfo_id cp_id,ccp_id,@aa:=(SELECT count(mobile_imsi) FROM sdk_sms_report_log WHERE create_time BETWEEN '2015-06-17' AND '2015-06-18'),
+		@bb:=(SELECT sum(feecode_fee) FROM sp_rec_data_detail  WHERE savetime BETWEEN '2015-06-17' AND '2015-06-18'),succ_num,sum(@bb*succ_num/@aa) rates,'2015-06-17' dater
+		FROM(
+			SELECT cpinfo_id,ccp_id,count(mobile_imsi) succ_num FROM sdk_sms_report_log WHERE create_time BETWEEN '2015-06-17' AND '2015-06-18' GROUP BY cpinfo_id,ccp_id
+		)s
+	</select>
+	
+	<!-- sjm: end -->
+	
+	<select id="listrecalldata13" parameterType="RecCallAllDate" resultType="RecCallAllDate">
+		select dater ,ccp_id,fee,dtype as status from sp_cp_13fee_stat where 1=1
+		 and  dater=#{start_time} 
+		<if test="op != null and op !='' ">  
+			and op=#{op}
+		</if>	
+			 
+		<if test="op == null ">  
+			and op=0
+		</if>	
+	</select>
+	
+	
+	
+	
+	<!-- sjm：审计 -->
+	<select id="listAllCompanyStat" parameterType="Incomededail" resultType="Incomededail">
+		select * from allincomededail c where 1=1
+		<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and c.dater between #{start_time} and #{end_time} 
+    	</if>
+		<if test="dater != null and dater !='' ">  
+			and c.dater=#{dater}
+		</if>
+		<if test="com_id != null and com_id !='' "> 
+			and c.com_id=#{com_id}
+		</if>
+		<if test="feecode_id != null and feecode_id !='' ">  
+			and c.feecode_id=#{feecode_id}
+		</if>
+	</select>	
+	
+	<update id="updCompanyStatFee" parameterType="Incomededail">
+		 update allincomededail set infee=#{infee} where dater=#{dater} and com_id=#{com_id} and feecode_id=#{feecode_id}
+	</update>
+	
+	<select id="getAllcompany" parameterType="SearchBean" resultType="SearchBean">
+		select id,company name from allcompany
+	</select>
+	
+	<select id="getAllfeecode" parameterType="SearchBean" resultType="SearchBean">
+		select id, com_id pid, feecode_name name from allfeecode where 1=1
+		<if test="pid != null and pid !='' "> 
+			and com_id=#{pid}
+		</if>
+	</select>
+	
+	<select id="listAllCalldetail" parameterType="Calldetail" resultType="Calldetail">
+		select * from allcalldetail c where 1=1
+		<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and c.dater between #{start_time} and #{end_time} 
+    	</if>
+		<if test="dater != null and dater !='' ">  
+			and c.dater=#{dater}
+		</if>
+		<if test="cpid != null and cpid !='' "> 
+			and c.cpid=#{cpid}
+		</if>
+		<if test="proid != null and proid !='' ">  
+			and c.proid=#{proid}
+		</if>
+	</select>	
+	
+	<update id="updCalldetailFee" parameterType="Calldetail">
+		 update allcalldetail set ${uname}=#{fee} where dater=#{dater} and cpid=#{cpid} and proid=#{proid}
+	</update>
+	
+	<select id="getAllproduct" parameterType="SearchBean" resultType="SearchBean">
+		select id, productname name from allproduct
+	</select>
+	
+	<select id="getAllcp" parameterType="SearchBean" resultType="SearchBean">
+		select id, cpname name from allcp where 1=1
+		
+	</select>
+	<!-- sjm: end -->
+	
+	
+	<!-- sjm：指令过滤产品 -->
+	<insert id="addFilterSpCom" parameterType="FilterSpCom" useGeneratedKeys="true" keyProperty="id">
+		 insert into filter_spcomm(cpid,commandid,status,onoff)
+		 values(#{cpid},#{commandid},#{status},#{onoff})
+	</insert>
+	
+	<select id="getFilterSpCom" parameterType="FilterSpCom" resultType="FilterSpCom">
+		select * from filter_spcomm
+		<if test="commandid != null and commandid !='' ">  
+			where commandid=#{commandid}
+		</if>
+	</select>
+	
+	<delete id="delFilterSpCom" parameterType="FilterSpCom">
+		delete from filter_spcomm where id=#{id}
+	</delete>
+	
+	<update id="updFilterSpCom" parameterType="FilterSpCom">
+		 update filter_spcomm set onoff=#{onoff} where commandid=#{commandid}
+	</update>
+	
+	<update id="updFilterSpComById" parameterType="FilterSpCom">
+		 update filter_spcomm set status=#{status} where id=#{id}
+	</update>
+	<!-- sjm: end -->
+	
+	<!-- sjm：版本APK文件管理 -->
+	<insert id="addCpApkVersion" parameterType="CpApkVersion" useGeneratedKeys="true" keyProperty="id">
+		 insert into cp_apk_version(channel,package,version,url,filename,updatetime)
+		 values(#{channel},#{packages},#{version},#{url},#{filename},now())
+	</insert>
+	
+	<select id="getCpApkVersion" parameterType="CpApkVersion" resultType="CpApkVersion">
+		select id,channel,package packages,version,url,filename,updatetime from cp_apk_version where 1=1
+		<if test="id != null and id !='' ">  
+			and id = #{id}
+		</if>
+		<if test="filename != null and filename !='' ">  
+			and filename = #{filename}
+		</if>
+		<if test="channel != null and channel !='' ">  
+			and channel = #{channel}
+		</if>
+		<if test="packages != null and packages !='' ">  
+			and package = #{packages}
+		</if>
+		<if test="version != null and version !='' ">  
+			and version = #{version}
+		</if>
+	</select>
+	
+	<delete id="delCpApkVersion" parameterType="CpApkVersion">
+		delete from cp_apk_version where id=#{id}
+	</delete>
+	
+	<update id="updCpApkVersion" parameterType="CpApkVersion">
+		 update cp_apk_version set channel=#{channel},package=#{packages},version=#{version},url=#{url},filename=#{filename},updatetime=now() where id=#{id}
+	</update>
+	
+	<update id="updCpApkVersionByCP" parameterType="CpApkVersion">
+		 update cp_apk_version set channel=#{channel},package=#{packages},updatetime=now() where id=#{id}
+	</update>
+	<!-- sjm: end -->
+	
+	<!-- sjm：版本APK意见反馈 -->
+	<select id="getCpApkFeedback" parameterType="CpApkFeedback" resultType="CpApkFeedback">
+		select id,channel,package packages,version,imsi,imei,email,text,savetime from cp_apk_feedback
+		where SUBSTR(savetime,1,10) between #{start_time} and #{end_time}
+	</select>
+	
+	<delete id="delCpApkFeedback" parameterType="CpApkFeedback">
+		delete from cp_apk_feedback where id=#{id}
+	</delete>
+	<!-- sjm: end -->
+	<!-- SJM: platform_green_mobile 绿名单用户手机号管理-->
+		<select id="MobileUserGreen" parameterType="MobileUserGreen" resultType="MobileUserGreen">
+		SELECT * FROM platform_green_mobile  where 1=1
+		<if test="mobile != null and mobile !='' "> 
+			AND mobile=#{mobile}
+		</if>
+		<if test="imsi != null and imsi !='' "> 
+			AND imsi=#{imsi}
+		</if>
+		<if test="id != null and id !='' "> 
+		 AND id=#{id} LIMIT 1
+		</if>
+		</select>
+		<insert id="addMobileUserGreen" parameterType="MobileUserGreen">
+			INSERT platform_green_mobile(mobile,imsi,create_time) VALUES (
+			#{mobile},#{imsi},NOW()
+			)
+		</insert>
+		<update id="updMobileUserGreen" parameterType="MobileUserGreen">
+			UPDATE platform_green_mobile SET mobile=#{mobile},imsi=#{imsi} WHERE id=#{id}
+		</update>
+		<delete id="delMobileUserGreen"  parameterType="MobileUserGreen">
+		    delete from platform_green_mobile WHERE id=#{id}
+		</delete>
+	<!-- sjm: end -->
+	<!-- SJM: platform_wihte_mobile 白名单用户手机号管理-->
+		<select id="MobileUserWihte" parameterType="MobileUserWihte" resultType="MobileUserWihte">
+		SELECT * FROM platform_wihte_mobile  where 1=1
+		<if test="mobile != null and mobile !='' "> 
+			AND mobile=#{mobile}
+		</if>
+		<if test="imsi != null and imsi !='' "> 
+			AND imsi=#{imsi}
+		</if>
+		<if test="id != null and id !='' "> 
+		 AND id=#{id} LIMIT 1
+		</if>
+		</select>
+		<insert id="addMobileUserWihte" parameterType="MobileUserWihte">
+			INSERT platform_wihte_mobile(mobile,imsi,create_time) VALUES (
+			#{mobile},#{imsi},NOW()
+			)
+		</insert>
+		<update id="updMobileUserWihte" parameterType="MobileUserWihte">
+			UPDATE platform_wihte_mobile SET mobile=#{mobile},imsi=#{imsi} WHERE id=#{id}
+		</update>
+		<delete id="delMobileUserWihte"  parameterType="MobileUserWihte">
+		    delete from platform_wihte_mobile WHERE id=#{id}
+		</delete>
+	<!-- sjm: end -->
+</mapper>

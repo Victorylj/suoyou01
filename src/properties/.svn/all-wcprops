@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/fee/!svn/ver/2015/code/j2ee/ymplatformNew/src/main/resources/properties
+END
+log4j.properties
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/fee/!svn/ver/1880/code/j2ee/ymplatformNew/src/main/resources/properties/log4j.properties
+END
+Bussiness.xml
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/fee/!svn/ver/1880/code/j2ee/ymplatformNew/src/main/resources/properties/Bussiness.xml
+END
+jdbc.properties
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/fee/!svn/ver/2015/code/j2ee/ymplatformNew/src/main/resources/properties/jdbc.properties
+END

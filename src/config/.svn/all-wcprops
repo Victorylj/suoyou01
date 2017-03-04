@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/fee/!svn/ver/1880/code/j2ee/ymplatformNew/src/main/resources/config
+END
+ApplicationContext.xml
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/fee/!svn/ver/1880/code/j2ee/ymplatformNew/src/main/resources/config/ApplicationContext.xml
+END
+dispatcher-servlet.xml
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/fee/!svn/ver/1880/code/j2ee/ymplatformNew/src/main/resources/config/dispatcher-servlet.xml
+END
+ImplAndBusinessBeans.xml
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/fee/!svn/ver/1880/code/j2ee/ymplatformNew/src/main/resources/config/ImplAndBusinessBeans.xml
+END

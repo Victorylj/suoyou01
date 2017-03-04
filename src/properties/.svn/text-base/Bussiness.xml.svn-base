@@ -1,0 +1,2869 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="mybatis.mapper.Bussiness">
+    
+     <insert id="addUser" parameterType="User"
+        useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO ums_user (user_name,account,user_type,password,locked,ref_roles,group_id,create_time,create_name)
+        VALUES(#{userName},#{account},#{userType},#{password},0,#{ref_roles},#{group_id},NOW(), #{create_name})
+    </insert>
+    
+    
+    
+      <select id="getUserList" parameterType="User" resultType="User">  
+    	select user_id AS userId,user_name AS userName,user_type AS userType,password ,locked,last_ip AS lastIp,ref_roles,group_id,account,
+    	last_visit AS lastVisit ,create_time,create_name from ums_user where 1 = 1  
+   		<if test="userName != null and userName !='' ">  
+       		and user_name = #{userName}  
+    	</if>  
+    	<if test="account != null and account !='' ">  
+       		and account = #{account}  
+    	</if>
+    	<if test="userId != null and userId !=''">
+    		and user_id = #{userId}
+    	</if>  
+	</select>  
+	
+	 <select id="getUser" parameterType="User" resultType="User">  
+    	select user_id AS userId,user_name AS userName,user_type AS userType,password ,locked,last_ip AS lastIp,ref_roles,group_id,account,
+    	last_visit AS lastVisit ,create_time from ums_user where 1 = 1  
+   		<if test="userName != null and userName !='' ">  
+       		and user_name = #{userName}  
+    	</if>  
+    	<if test="account != null and account !='' ">  
+       		and account = #{account}  
+    	</if>  
+	</select>  
+	
+	
+	<update id="updateUser" parameterType="User"  >
+        update ums_user set 
+        group_id=#{group_id},
+		user_name=#{userName},
+		ref_roles=#{ref_roles},
+		last_ip=#{lastIp},
+		last_visit=#{lastVisit},
+		create_name=#{create_name}
+ 		where user_id =#{userId}
+    </update>
+    
+     <insert id="addRoleUserLink" parameterType="UserRoleLink"
+        useGeneratedKeys="true" keyProperty="classId">
+        INSERT INTO ums_user_role (user_id,role_id)
+        VALUES(#{user_id},#{role_id})
+    </insert>
+    
+      
+    <delete id="deleteRoleUserLink" parameterType="User"  >
+        delete from ums_user_role  
+ 		where  user_id = #{user_id}  
+  
+       
+    </delete>
+    
+	
+	 <insert id="addGroup" parameterType="Group"
+        useGeneratedKeys="true" keyProperty="classId">
+        INSERT INTO ums_group (parent_id,group_name)
+        VALUES(#{parent_id},#{group_name})
+    </insert>
+    
+      <select id="listGroup" parameterType="Group" resultType="Group">  
+    	select group_id ,parent_id,group_name from ums_group where 1 = 1  
+   		<if test="group_id != null and group_id !='' ">  
+       		and group_id = #{group_id}  
+    	</if>  
+	</select>  
+	
+	
+	<update id="updateGroup" parameterType="Group"  >
+        update ums_group set 
+		group_name=#{group_name}
+ 		where group_id =#{group_id}
+    </update>
+    
+    
+     <insert id="addModule" parameterType="Module"
+        useGeneratedKeys="true" keyProperty="classId">
+        INSERT INTO ums_module (module_name,module_path,module_url,parent_id,is_leaf,display_order,p_id)
+        VALUES(#{module_name},#{module_path},#{module_url},#{parent_id},#{is_leaf},#{display_order},#{p_id})
+    </insert>
+    
+      <select id="listModule" parameterType="Module" resultType="Module">  
+    	select module_id,module_name,module_path,module_url,parent_id,is_leaf,display_order,p_id from ums_module where 1 = 1  
+   		<if test="module_id != null and module_id !='' ">  
+       		and module_id = #{module_id}  
+    	</if>  
+	</select>  
+	 <select id="getModule" parameterType="Module" resultType="Module">  
+    	select module_id,module_name,module_path,module_url,parent_id,is_leaf,display_order ,p_id from ums_module where 1 = 1  
+   		<if test="parent_id != null and parent_id !='' ">  
+       		and parent_id = #{parent_id}  
+    	</if>  
+    	<if test="module_id != null and module_id !='' ">  
+       		and module_id = #{module_id}  
+    	</if>  
+    	ORDER BY display_order DESC LIMIT 1
+	</select>  
+	
+	  <select id="getUserModules" parameterType="User" resultType="Module">  
+    	SELECT m.* FROM ums_user u , ums_user_role ur ,ums_role r , ums_role_module rm ,ums_module m
+		WHERE u.user_id = ur.user_id AND ur.role_id=r.role_id AND r.role_id=rm.role_id AND rm.module_id=m.module_id
+		AND u.user_id=#{userId} ORDER BY m.p_id ,m.is_leaf ,m.display_order
+
+  
+	</select>  
+	
+	<update id="updateModule" parameterType="Module"  >
+        update ums_module set 
+		module_name=#{module_name},
+		module_path=#{module_path},
+		module_url=#{module_url},
+		parent_id=#{parent_id},
+		is_leaf=#{is_leaf},
+		display_order=#{display_order}
+ 		where module_id =#{module_id}
+    </update>
+    
+    <delete id="deleteModule" parameterType="Module">
+    	 delete from ums_module
+ 		where module_id=#{arrIds}
+ 		
+    </delete>
+    
+     <insert id="addRole" parameterType="Role"
+        useGeneratedKeys="true" keyProperty="role_id">
+        INSERT INTO ums_role (ref_modules,role_name)
+        VALUES(#{ref_modules},#{role_name})
+    </insert>
+    
+      <select id="listRole" parameterType="Role" resultType="Role">  
+    	select role_id ,ref_modules,role_name from ums_role where 1 = 1  
+   		<if test="role_id != null and role_id !='' ">  
+       		and role_id = #{role_id}  
+    	</if>  
+    	<if test="role_name != null and role_name !='' ">  
+       		and role_name = #{role_name}  
+    	</if> 
+	</select>  
+	
+	
+	<update id="updateRole" parameterType="Role"  >
+        update ums_role set 
+		role_name=#{role_name},
+		ref_modules=#{ref_modules}
+ 		where role_id =#{role_id}
+    </update>
+    
+     <insert id="addRoleModuleLink" parameterType="ModuleRoleLink"
+        useGeneratedKeys="true" keyProperty="classId">
+        INSERT INTO ums_role_module (module_id,role_id)
+        VALUES(#{module_id},#{role_id})
+    </insert>
+    
+    <delete id="deleteRole" parameterType="Role"  >
+        delete from ums_role  
+ 		where 1=1 
+ 		<if test="arrayIds != null and arrayIds != ''">
+ 			and role_id = #{arrayIds}
+ 		</if>
+       
+    </delete>  
+    <delete id="deleteRoleModuleLink" parameterType="Role"  >
+        delete from ums_role_module  
+ 		where 1=1
+		<if test="role_id != null and role_id !='' ">  
+       		and role_id = #{role_id}  
+    	</if>  
+       
+    </delete>
+    
+    
+    <!--SpCompany-->
+   <select id="listSpCompany" parameterType="SpCompany" resultType="SpCompany">  
+    	select * from sp_company where 1 = 1  and  sp_status=0
+   		<if test="sp_name != null and sp_name !='' ">  
+       		and sp_name = #{sp_name}  
+    	</if>  
+    	
+    	<if test="sp_id != null and sp_id !='' ">  
+       		and sp_id = #{sp_id}  
+    	</if> 
+    	
+	</select>  
+	
+	<!-- sjm: -->
+	<select id="searchSpCompany" parameterType="SpCompany" resultType="SearchBean">  
+    	select sp_id id, sp_name name from sp_company where sp_status=0
+    	<if test="sp_name != null and sp_name !='' ">  
+       		and sp_name like #{sp_name} 
+    	</if>  
+	</select>  
+	<select id="seachCpCompany" parameterType="CpCompany" resultType="SearchBean">  
+    	select  cp_id id, cp_name name from cp_company where 1 = 1  and  cp_status=0
+    	 
+    	<if test="cp_name != null and cp_name !='' ">  
+       		and cp_name like #{cp_name}  
+    	</if>  
+	</select>  
+	
+	<insert id="addSpCompany" parameterType="SpCompany"
+        useGeneratedKeys="true" keyProperty="sp_id">
+        INSERT INTO sp_company (SP_NAME,SP_ADDRESS,CREATE_TIME,CREATE_NAME,sp_gsstatus,sp_thecontact,sp_contactmobile,sp_contactqq,sp_selectaddress)
+        VALUES(#{sp_name},#{sp_address},NOW(),#{create_name},#{sp_gsstatus},#{sp_thecontact},#{sp_contactmobile},#{sp_contactqq},#{sp_selectaddress})
+    </insert>
+    
+    <update id="deleteSpCompany" parameterType="SpCompany"  >
+        update sp_company set sp_status=1 where sp_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    
+    <update id="updateSpCompany" parameterType="SpCompany"  >
+        update sp_company set 
+		sp_name=#{sp_name},
+		sp_address=#{sp_address},
+		sp_gsstatus=#{sp_gsstatus},
+		sp_thecontact=#{sp_thecontact},
+		sp_contactmobile=#{sp_contactmobile},
+		sp_contactqq=#{sp_contactqq},
+		sp_selectaddress=#{sp_selectaddress},
+		create_name=#{create_name}
+ 		where sp_id =#{sp_id}
+       
+    </update>
+    
+      <!--SpChannel-->
+   <select id="listSpChannel" parameterType="SpChannel" resultType="SpChannel">  
+    	select * from sp_channel where 1 = 1  and  sp_channel_status=0
+   		<if test="sp_channel_name != null and sp_channel_name !='' ">  
+       		and sp_channel_name = #{sp_channel_name}  
+    	</if>  
+    	<if test="sp_id != null and sp_id !='' ">  
+       		and sp_id = #{sp_id}  
+    	</if>
+    	<if test="sp_channel_id != null and sp_channel_id !='' ">  
+       		and sp_channel_id = #{sp_channel_id}  
+    	</if>
+	</select>  
+	
+	<insert id="addSpChannel" parameterType="SpChannel"
+        useGeneratedKeys="true" keyProperty="sp_channel_id">
+        INSERT INTO sp_channel (sp_name,sp_id,sp_channel_name,sp_channel_ip,sp_channel_mo_url,sp_channel_mr_url,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{sp_name},#{sp_id},#{sp_channel_name},#{sp_channel_ip},#{sp_channel_mo_url},#{sp_channel_mr_url},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name} )
+    </insert>
+    
+    <update id="deleteSpChannel" parameterType="SpChannel"  >
+        update sp_channel set sp_channel_status=1 where sp_channel_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    
+    <update id="updateSpChannel" parameterType="SpChannel"  >
+        update sp_channel set 
+        sp_name=#{sp_name},
+		sp_id=#{sp_id},
+		sp_channel_name=#{sp_channel_name},
+		sp_channel_ip=#{sp_channel_ip},
+		sp_channel_mo_url=#{sp_channel_mo_url},
+		sp_channel_mr_url=#{sp_channel_mr_url},
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where sp_channel_id =#{sp_channel_id}
+       
+    </update>
+    
+    
+    
+    
+     <select id="qryCaitsatList" parameterType="Caitsat" resultType="Caitsat">  
+    	SELECT a.dater,b.cp_id,b.cp_name,b.product_id,b.product_name ,a.ccp_id,a.n FROM 
+			(SELECT dater,ccp_id ,COUNT(DISTINCT mobile) n FROM  platform_black_mobileinfo 
+			GROUP BY ccp_id, dater) a ,cp_subchannel b WHERE a.ccp_id=b.subchannel_id 
+    	<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and SUBSTR(dater,1,10) between #{start_time} and #{end_time}
+    	</if>
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and cp_id = #{cp_id}  
+    	</if>
+    	<if test="product_id != null and product_id !='' ">  
+       		and product_id = #{product_id}  
+    	</if>
+    	<!-- <if test="start_time == null or start_time =='' or end_time == null or end_time ==''">  
+       		and SUBSTR(savetime,1,10)  = SUBSTR(now(),1,10)
+    	</if> -->
+		order by a.dater desc
+	</select>  
+     <select id="qryCaitsatList" parameterType="Caitsat" resultType="Caitsat">  
+    	SELECT a.dater,b.cp_id,b.cp_name,b.product_id,b.product_name ,a.ccp_id,a.n FROM 
+			(SELECT dater,ccp_id ,COUNT(DISTINCT mobile) n FROM  platform_black_mobileinfo 
+			GROUP BY ccp_id, dater) a ,cp_subchannel b WHERE a.ccp_id=b.subchannel_id 
+    	<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and SUBSTR(dater,1,10) between #{start_time} and #{end_time}
+    	</if>
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and cp_id = #{cp_id}  
+    	</if>
+    	<if test="product_id != null and product_id !='' ">  
+       		and product_id = #{product_id}  
+    	</if>
+    	<!-- <if test="start_time == null or start_time =='' or end_time == null or end_time ==''">  
+       		and SUBSTR(savetime,1,10)  = SUBSTR(now(),1,10)
+    	</if> -->
+		
+	</select>  
+     <select id="getRequstInfoList" parameterType="RequstInfo" resultType="RequstInfo">  
+    
+		SELECT mobile_imsi,appfee_id,mobile,cpinfo_id,ccp_id,province_name,package AS packagestr ,IFNULL(error_name,'成功返回协议') error_name,IFNULL(error_info,'成功返回协议') error_info,create_time 
+    	FROM sdk_requst_log WHERE 1=1
+   	
+    	<if test="mobile_imsi != null and mobile_imsi !='' ">  
+       		and mobile_imsi = #{mobile_imsi}  
+    	</if>
+    	<if test="ccp_id != null and ccp_id !='' ">  
+       		and ccp_id = #{ccp_id}  
+    	</if>
+    	order by id desc limit 20
+	</select>  
+     <select id="getImsiMobileList" parameterType="RequstInfo" resultType="RequstInfo">  
+    
+		SELECT DISTINCT imsi,mobile,SUBSTR(savetime,1,10)  as savetime,sp_name,feecode_name as feecodes FROM mobile_filter_log 
+		WHERE check_stat=0 
+		<!--  feecode_number='10669397615' AND command='6' AND check_stat=0 AND SUBSTR(savetime,1,10)='2016-07-08'  -->
+   	
+    	<if test="feecode_number != null and feecode_number !='' ">  
+       		and feecode_number = #{feecode_number}  
+    	</if>
+    	<if test="command != null and command !='' ">  
+       		and command = #{command}  
+    	</if>
+    	<if test="sp_id != null and sp_id !='' ">  
+       		and sp_id = #{sp_id}  
+    	</if>
+    	
+    	<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and SUBSTR(savetime,1,10) between #{start_time} and #{end_time}
+    	</if>
+    	
+    	<if test="imsi != null and imsi !='' ">  
+       		and imsi = #{imsi}  
+    	</if>
+    	<if test="ccp_id != null and ccp_id !='' ">  
+       		and ccp_id = #{ccp_id}  
+    	</if>
+    	order by id desc  limit 20
+    	<if test="setCount != null">  
+    	 limit #{setCount} 
+    	 </if>
+    	<if test="setCount == null">  
+    	 limit 20
+    	 </if>
+	</select>  
+	
+	
+        <!--SpInterfaceParam-->
+   <select id="listSpInterfaceParam" parameterType="SpInterfaceParam" resultType="SpInterfaceParam">  
+    	select s.sp_name,p.* from sdk_inter_params p,sp_company s where 
+    	  p.sp_id=s.sp_id 
+   	
+    	<if test="sp_id != null and sp_id !='' ">  
+       		and s.sp_id = #{sp_id}  
+    	</if>
+    	<if test="id != null and id !='' ">  
+       		and p.id = #{id}  
+    	</if>
+    	order by p.id desc
+	</select>  
+	
+	<insert id="addSpInterfaceParam" parameterType="SpInterfaceParam"
+        useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sdk_inter_params (sp_id,sp_tag,linkid,spnumber,command,mobile,succ_status,status_str,
+        ip_str,province,pro_encoder,ret_str,timestr,url,remarks,
+        create_time,create_name)
+        VALUES(#{sp_id},#{sp_tag},#{linkid},#{spnumber},#{command},#{mobile},#{succ_status},#{status_str},
+        #{ip_str},#{province},#{pro_encoder},#{ret_str},#{timestr},#{url},
+        #{remarks},NOW(),#{create_name} )
+    </insert>
+    
+    <update id="deleteSpInterfaceParam" parameterType="SpInterfaceParam"  >
+        delete from sdk_inter_params where id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    
+    <update id="updateSpInterfaceParam" parameterType="SpInterfaceParam"  >
+        update sdk_inter_params set 
+        sp_id=#{sp_id},
+		linkid=#{linkid},
+		command=#{command},
+		spnumber=#{spnumber},
+		mobile=#{mobile},
+		succ_status=#{succ_status},
+		status_str=#{status_str},
+		ip_str=#{ip_str},
+		province=#{province},
+		pro_encoder=#{pro_encoder},
+		ret_str=#{ret_str},
+		timestr=#{timestr},
+		remarks=#{remarks},
+		create_time=NOW(),
+		create_name=#{create_name}
+ 		where id =#{id}
+       
+    </update>
+    
+    
+       <!--SpFeecode-->
+   <select id="listSpFeecode" parameterType="SpFeecode" resultType="SpFeecode">  
+    	select * from sp_feecode where 1 = 1  and  feecode_status=0
+   		<if test="feecode_name != null and feecode_name !='' ">  
+       		and feecode_name = #{feecode_name}  
+    	</if>  
+    	<if test="feecode_code != null and feecode_code !='' ">  
+       		and feecode_code = #{feecode_code}  
+    	</if> 
+    	<if test="feecode_number != null and feecode_number !='' ">  
+       		and feecode_number = #{feecode_number}  
+    	</if> 
+    	<if test="feecode_type != null and feecode_type !='' ">  
+       		and feecode_type = #{feecode_type}  
+    	</if> 
+    	<if test="feecode_id != null and feecode_id !='' ">  
+       		and feecode_id = #{feecode_id}  
+    	</if>
+    	<if test="sp_id != null and sp_id !='' ">  
+       		and sp_id = #{sp_id}  
+    	</if>
+    	
+    	<if test="feecode_op != null and feecode_op !='' ">  
+       		and feecode_op = #{feecode_op}  
+    	</if>
+	</select >
+	  
+	<select id="getFeecodeNumberBySpId" parameterType="SpFeecode" resultType="int">
+		select feecode_number from sp_feecode where sp_id =#{sp_id} and feecode_number =#{feecode_number}
+	</select> 
+	
+	<insert id="addSpFeecode" parameterType="SpFeecode"
+        useGeneratedKeys="true" keyProperty="feecode_id">
+        INSERT INTO sp_feecode (feecode_code,feecode_name,feecode_op,sp_name,sp_id,
+		feecode_number,feecode_fee,feecode_type,
+        remarks,create_time,create_name,update_time,update_name,group_id,feecode_mutex,hz)
+        VALUES(#{feecode_code},#{feecode_name},#{feecode_op},#{sp_name},#{sp_id},
+        #{feecode_number},#{feecode_fee},#{feecode_type},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name},#{group_id},#{feecode_mutex},#{hz})
+    </insert>
+    
+    <update id="deleteSpFeecode" parameterType="SpFeecode"  >
+        update sp_feecode set feecode_status=1 where feecode_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    <!-- Sjm: -->
+    <select id="searchSpFeecode" parameterType="SpFeecode" resultType="SearchBean">  
+    	select feecode_id id, sp_id pid,feecode_number code, CONCAT(feecode_name, '-',feecode_number) name, feecode_op num from sp_feecode where feecode_status=0
+    	<if test="feecode_number != null and feecode_number !='' ">  
+       		and CONCAT(feecode_name, '-',feecode_number) like #{feecode_number} 
+    	</if>  
+	</select> 
+    <select id="searchCpProduct" parameterType="CpProduct" resultType="SearchBean">  
+    	select product_id id, cp_id pid,product_code code, product_name name from cp_product where 1=1
+    	<if test="product_name != null and product_name !='' ">  
+       		and product_name like #{product_name} 
+    	</if>  
+	</select> 
+	
+	<!-- select feecode_op id, feecode_number num, sp_id pid, CONCAT(feecode_name, '-',feecode_number) name, feecode_code code from sp_feecode where feecode_status=0 -->
+	<select id="searchSpFeecodeTow" parameterType="SpFeecode" resultType="SearchBean">  
+		select f.feecode_op id, f.feecode_number num, f.sp_id pid, CONCAT(f.feecode_name, '-',f.feecode_number) name, c.command code from sp_feecode f,sp_command c where f.feecode_id=c.feecode_id and f.feecode_status=0
+    	<if test="feecode_number != null and feecode_number !='' ">  
+       		and CONCAT(feecode_name, '-',feecode_number) like #{feecode_number} 
+    	</if>  
+	</select>
+    
+    
+    <update id="updateSpFeecode" parameterType="SpFeecode"  >
+        update sp_feecode set
+        feecode_code=#{feecode_code},
+        feecode_name=#{feecode_name},
+        feecode_op=#{feecode_op},
+        sp_name=#{sp_name},
+		sp_id=#{sp_id},
+		feecode_number=#{feecode_number},
+		feecode_type=#{feecode_type},
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name},
+		group_id=#{group_id},
+		feecode_mutex=#{feecode_mutex},
+		hz=#{hz}
+ 		where feecode_id =#{feecode_id}
+       
+    </update>
+    
+    
+     <select id="getSpCommandId" parameterType="SpCommand" resultType="SpCommand">  
+     	SELECT command_id FROM sp_command c order by  c.command_id desc
+     </select>
+      <select id="getSpCommandIdBySpid" parameterType="SpCommand" resultType="SpCommand">  
+     	SELECT command_id FROM sp_command c, sp_feecode s where s.feecode_id = c.feecode_id 
+     	<if test="sp_id != null and sp_id !='' ">  
+     		and s.sp_id=#{sp_id}  
+     	</if>
+     	order by  c.command_id desc  
+     </select>
+      <!--SpCommand-->
+      <select id="listSpCommandNew" parameterType="SpCommand" resultType="SpCommand">  
+      	SELECT f.sp_id,f.sp_name, c.feecode_id,f.feecode_name,f.feecode_code,f.feecode_number,f.feecode_op,c.command_id ,c.command,c.command_length,c.command_type,c.command_fee,c.command_share,
+		c.command_status, c.positive_statu, c.synchro_num
+		FROM sp_command c ,sp_feecode f WHERE c.feecode_id=f.feecode_id  
+      </select>
+      
+   <select id="listSpCommand" parameterType="SpCommand" resultType="SpCommand">  
+    	SELECT f.sp_id,f.sp_name, c.feecode_id,f.feecode_name,f.feecode_code,f.feecode_number,f.feecode_op,c.command_id ,c.command,c.command_length,c.command_type,c.command_fee,c.command_share,
+c.remarks,c.update_time,c.update_name,c.command_status, c.create_name, c.positive_statu, c.synchro_num
+FROM sp_command c ,sp_feecode f WHERE c.feecode_id=f.feecode_id  
+   		<if test="command != null and command !='' ">  
+       		and c.command = #{command}  
+    	</if>  
+    	<if test="feecode_id != null and feecode_id !='' ">  
+       		and c.feecode_id = #{feecode_id}  
+    	</if>
+    	<if test="feecode_number != null and feecode_number !='' ">  
+       		and f.feecode_number = #{feecode_number}  
+    	</if>
+    	<if test="sp_id != null and sp_id !='' ">  
+       		and f.sp_id= #{sp_id}  
+    	</if>
+    	<if test="command_status != null and command_status !='' ">  
+       		and c.command_status= #{command_status}  
+    	</if>
+    	order by c.command_status asc , c.command_id desc
+	</select>  
+	
+	<insert id="addSpCommand" parameterType="SpCommand"
+        useGeneratedKeys="true" keyProperty="command_id">
+        INSERT INTO sp_command (feecode_id,command,command_length,command_type,command_fee,
+        remarks,create_time,create_name,update_time,update_name,command_status,command_share,synchronous_command,synchronous_port,synchro_num,positive_statu)
+        VALUES(#{feecode_id},#{command},#{command_length},#{command_type},#{command_fee},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name},1,#{command_share},#{synchronous_command},#{synchronous_port},#{synchro_num},1)
+    </insert>
+    
+    <update id="closeOrOpenSpCommand" parameterType="SpCommand"  >
+        update sp_command set command_status=#{command_status} where command_id in
+        <foreach item="item" index="index" collection="ids" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    <!-- Sjm: -->
+    <update id="updSpCommandPositiveStatu" parameterType="SpCommand"  >
+        update sp_command set positive_statu=#{positive_statu} where command_id in
+        <foreach item="item" index="index" collection="ids" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    <!-- end -->
+    
+    <update id="updateSpCommand" parameterType="SpCommand"  >
+        update sp_command set 
+        command=#{command},
+		command_length=#{command_length},
+		command_type=#{command_type},
+		command_fee=#{command_fee},
+		command_share=#{command_share},
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name},
+		synchronous_command=#{synchronous_command},
+		synchronous_port=#{synchronous_port},
+		synchro_num=#{synchro_num}  
+ 		where command_id =#{command_id}
+       
+    </update>
+    
+    <!-- VideoResource -->
+     <select id="listVideoResource" parameterType="VideoResource" resultType="VideoResource">  
+    	SELECT f.sp_id,f.sp_name,c.feecode_id,f.feecode_name,f.feecode_code,f.feecode_number,
+    	c.id ,c.video_name,c.video_code,c.access_url,
+	c.remarks,c.update_time,c.update_name
+	FROM video_resource c ,sp_feecode f WHERE c.feecode_id=f.feecode_id
+   		<if test="id != null and id !='' ">  
+       		and c.id = #{id}  
+    	</if>  
+    	<if test="feecode_id != null and feecode_id !='' ">  
+       		and c.feecode_id = #{feecode_id}  
+    	</if>
+		<if test="sp_id != null and sp_id !='' ">  
+       		and f.sp_id = #{sp_id}  
+    	</if>
+	</select>  
+	
+	<insert id="addVideoResource" parameterType="VideoResource"
+        useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO video_resource (feecode_id,feecode_code,feecode_name,video_name,video_code,access_url,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{feecode_id},#{feecode_code},#{feecode_name},#{video_name},#{video_code},#{access_url},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name} )
+    </insert>
+    
+    <update id="deleteVideoResource" parameterType="VideoResource"  >
+        update video_resource set v_status=1 where id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    
+    <update id="updateVideoResource" parameterType="VideoResource"  >
+        update video_resource set 
+        video_code=#{video_code},
+		video_name=#{video_name},
+		access_url=#{access_url},
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where id =#{id}
+       
+    </update>
+    
+    <!-- SmsResource -->
+     <select id="listSmsResource" parameterType="SmsResource" resultType="SmsResource">  
+    	SELECT f.sp_id,f.sp_name,c.feecode_id,f.feecode_name,f.feecode_code,f.feecode_number,
+    	c.id ,c.sms_name,c.sms_fee,c.sms_code,c.access_url,c.channelid,
+	c.remarks,c.update_time,c.update_name,c.create_name
+	FROM sms_resource c ,sp_feecode f WHERE c.feecode_id=f.feecode_id
+   		<if test="id != null and id !='' ">  
+       		and c.id = #{id}  
+    	</if>  
+    	<if test="feecode_id != null and feecode_id !='' ">  
+       		and c.feecode_id = #{feecode_id}  
+    	</if>
+    	<if test="sp_id != null and sp_id !='' ">  
+       		and f.sp_id = #{sp_id}  
+    	</if>
+
+	</select>  
+	
+	<insert id="addSmsResource" parameterType="SmsResource"
+        useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sms_resource (feecode_id,feecode_code,feecode_name,sms_name,sms_code,sms_fee,access_url,channelid,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{feecode_id},#{feecode_code},#{feecode_name},#{sms_name},#{sms_code},#{sms_fee},#{access_url},#{channelid},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name} )
+    </insert>
+    
+    <update id="deleteSmsResource" parameterType="SmsResource"  >
+        update sms_resource set v_status=1 where id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+
+    <update id="updateSmsResource" parameterType="SmsResource"  >
+        update sms_resource set 
+        sms_code=#{sms_code},
+		sms_name=#{sms_name},
+		sms_fee=#{sms_fee},
+		channelid=#{channelid},
+		access_url=#{access_url},
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where id =#{id}
+       
+    </update>
+    
+    
+       <!--CpMakefeeItem--> 
+    <select id="listCpMakefeeItemCount" parameterType="CpMakefeeItem" resultType="int">  
+       	select count(*) from cp_makefee_item  i , sp_feecode f ,sp_command c where  i.feecode_id=f.feecode_id and i.command_id=c.command_id
+    	<if test="feecode_id != null and feecode_id !='' ">  
+       		and i.feecode_id = #{feecode_id}  
+    	</if>
+    	<if test="feecode_op != null and feecode_op !='' ">  
+       		and i.feecode_op = #{feecode_op}  
+    	</if>
+    	
+    	<if test="sp_id != null and sp_id !='' ">  
+       		and f.sp_id = #{sp_id}  
+    	</if>
+    	
+    	<if test="feecode_number != null and feecode_number !='' ">  
+       		and i.feecode_number = #{feecode_number}  
+    	</if>
+    	
+    	<if test="command != null and command !='' ">  
+       		and i.command = #{command}  
+    	</if>
+    	
+    	<if test="cp_item_id != null and cp_item_id !='' ">  
+       		and i.cp_item_id = #{cp_item_id}  
+    	</if>
+    	<if test="open_province_id != null and open_province_id !='' ">  
+       		and i.open_province_id = #{open_province_id}  
+    	</if>
+    	<if test="item_status != null and item_status !='' ">  
+       		and i.item_status = #{item_status}  
+    	</if>
+    	
+    	<if test="command_status != null and command_status !='' ">  
+       		and command_status = #{command_status}  
+    	</if>
+     </select>
+       
+       
+   <select id="listCpMakefeeItem" parameterType="CpMakefeeItem" resultType="CpMakefeeItem">  
+    	select f.sp_id,f.sp_name, f.feecode_name,f.feecode_code,f.feecode_fee,c.command_length,
+    	c.command_fee,c.command_share,i.feecode_op,f.feecode_number,i.cp_item_id,i.feecode_id,i.command_id,i.command,i.is_second,
+        i.second_port,i.second_info,i.second_type,i.replay_start_str,i.replay_end_str,i.replay_str,
+        i.is_filter,i.filter_port,i.filter_info,i.network_role,i.sms_delay_time,i.use_priority,
+        i.open_province_id,i.open_province_name,i.hide_city,i.item_status,synchronous_command,synchronous_port,synchro_num,
+        i.remarks,i.create_time,i.create_name,i.update_time,i.update_name 
+         from cp_makefee_item i , sp_feecode f ,sp_command c where  i.feecode_id=f.feecode_id and i.command_id=c.command_id
+   		<if test="command_id != null and command_id !='' ">  
+       		and i.command_id = #{command_id}  
+    	</if>  
+    	<if test="feecode_id != null and feecode_id !='' ">  
+       		and i.feecode_id = #{feecode_id}  
+    	</if>
+    	<if test="feecode_op != null and feecode_op !='' ">  
+       		and i.feecode_op = #{feecode_op}  
+    	</if>
+    	
+    	<if test="sp_id != null and sp_id !='' ">  
+       		and f.sp_id = #{sp_id}  
+    	</if>
+    	
+    	<if test="feecode_number != null and feecode_number !='' ">  
+       		and i.feecode_number = #{feecode_number}  
+    	</if>
+    	
+    	<if test="command != null and command !='' ">  
+       		and i.command = #{command}  
+    	</if>
+    	
+    	<if test="cp_item_id != null and cp_item_id !='' ">  
+       		and i.cp_item_id = #{cp_item_id}  
+    	</if>
+    	<if test="open_province_id != null and open_province_id !='' ">  
+       		and i.open_province_id = #{open_province_id}  
+    	</if>
+    	<if test="item_status != null and item_status !='' ">  
+       		and i.item_status = #{item_status}  
+    	</if>
+    	
+    	<if test="command_status != null and command_status !='' ">  
+       		and command_status = #{command_status}  
+    	</if>
+    	
+    	order by cp_item_id DESC
+	</select>  
+	
+	 
+	 <select id="getOpenCommandCount" parameterType="CpMakefeeItem" resultType="CpMakefeeItem">  
+    	SELECT open_province_id, open_province_name ,feecode_op,ROUND(SUM(flimit.single_day_num)) fees,COUNT(*) AS item_count FROM sp_command cmd ,cp_makefee_item item ,sp_feecode_limit flimit 
+	WHERE cmd.command_id=item.command_id AND cmd.command_status=0 AND item.item_status=0 AND flimit.feecode_id=cmd.feecode_id
+	<if test="feecode_op != null and feecode_op !='' ">  
+       		and item.feecode_op = #{feecode_op}  
+    	</if>
+	GROUP BY open_province_id, open_province_name,feecode_op
+   		
+	</select>  
+	
+	<insert id="addCpMakefeeItem" parameterType="CpMakefeeItem"
+        useGeneratedKeys="true" keyProperty="cp_item_id">
+        INSERT INTO cp_makefee_item (feecode_id,feecode_number,feecode_op,command_id,command,is_second,
+        second_port,second_info,second_type,replay_start_str,replay_end_str,replay_str,
+        is_filter,filter_port,filter_info,network_role,sms_delay_time,use_priority,item_status,
+        open_province_id,open_province_name,hide_city,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{feecode_id},#{feecode_number},#{feecode_op},#{command_id},#{command},#{is_second},
+        #{second_port},
+        #{second_info},#{second_type},#{replay_start_str},#{replay_end_str},#{replay_str},
+        #{is_filter},#{filter_port},#{filter_info},#{network_role},#{sms_delay_time},#{use_priority},#{item_status},
+        #{open_province_id},#{open_province_name},#{hide_city},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name})
+    </insert>
+    
+    <update id="closeOrOpenCpMakefeeItemByCommandId"  >
+        update cp_makefee_item set item_status=#{command_status} where command_id in
+        <foreach item="item" index="index" collection="ids" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+     <update id="closeOrOpenCpMakefeeItem"   parameterType="CpMakefeeItem"  >
+        update cp_makefee_item set item_status=#{item_status}
+         where cp_item_id in
+        <foreach item="item" index="index" collection="ids" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    
+    <update id="updateCpMakefeeItem" parameterType="CpMakefeeItem"  >
+        update cp_makefee_item set 
+        
+		is_second=#{is_second},
+		second_port=#{second_port},
+		second_info=#{second_info},
+		second_type=#{second_type},
+		feecode_op=#{feecode_op},
+		replay_start_str=#{replay_start_str},
+		replay_end_str=#{replay_end_str},
+		replay_str=#{replay_str},
+		is_filter=#{is_filter},
+		filter_port=#{filter_port},
+		filter_info=#{filter_info},
+		network_role=#{network_role},
+		sms_delay_time=#{sms_delay_time},
+		use_priority=#{use_priority},
+		<if test="cp_item_id != null and cp_item_id !='' ">  
+		open_province_id=#{open_province_id},
+		open_province_name=#{open_province_name},
+		hide_city=#{hide_city},
+		item_status=#{item_status},
+		</if>
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where 1=1
+ 		<if test="cp_item_id != null and cp_item_id !='' ">  
+       		and cp_item_id = #{cp_item_id}  
+    	</if>
+       <if test="command_id != null and command_id !='' ">  
+       		and command_id = #{command_id}  
+    	</if>  
+    	<if test="feecode_id != null and feecode_id !='' ">  
+       		and feecode_id = #{feecode_id}  
+    	</if>
+	
+    </update>
+    
+    
+    
+    
+      <!--CpCompany-->
+   <select id="listCpCompany" parameterType="CpCompany" resultType="CpCompany">  
+    	select * from cp_company where 1 = 1  and  cp_status=0
+   		<if test="cp_name != null and cp_name !='' ">  
+       		and cp_name = #{cp_name}  
+    	</if>  
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and cp_id = #{cp_id}  
+    	</if>  
+	</select>  
+	
+	<select id="listCpMember" parameterType="CpMember" resultType="cpMember">  
+    	SELECT DISTINCT sid AS cpm_id,chs_name AS cpm_name FROM sdk_cpmember 
+	</select>  
+	
+	
+	
+	<insert id="addCpCompany" parameterType="CpCompany"
+        useGeneratedKeys="true" keyProperty="cp_id">
+        INSERT INTO cp_company (cp_name,cp_address,cp_ip,mo_url,mr_url,public_key,private_key,cp_account,cp_passwd,cp_pay_account,cp_cut,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{cp_name},#{cp_address},#{cp_ip},#{mo_url},#{mr_url},#{public_key},#{private_key},#{cp_account},
+        #{cp_passwd},#{cp_pay_account},#{cp_cut},
+        
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name}  )
+    </insert>
+    
+    <update id="deleteCpCompany" parameterType="CpCompany"  >
+        update cp_company set cp_status=1 where cp_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    
+    <update id="updateCpCompany" parameterType="CpCompany"  >
+        update cp_company set 
+		cp_name=#{cp_name},
+		cp_address=#{cp_address},
+		cp_ip=#{cp_ip},
+		mo_url=#{mo_url},
+		mr_url=#{mr_url},
+		public_key=#{public_key},
+		private_key=#{private_key},
+		cp_account=#{cp_account},
+		cp_passwd=#{cp_passwd},
+		cp_pay_account=#{cp_pay_account},
+		cp_cut=#{cp_cut},
+		
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where cp_id =#{cp_id}
+       
+    </update>
+    
+        <!--Channel-->
+   <select id="listChannel" parameterType="Channel" resultType="Channel">  
+    	select c.ch_id,c.ch_name,c.m_id,c.ch_address,c.ch_ip,c.mo_url,c.mr_url,c.public_key,c.private_key,
+    	c.ch_account,c.ch_passwd,c.ch_pay_account,c.ch_cut,
+        c.remarks,c.create_time,c.create_name,c.update_time,c.update_name,c.show_type,m.m_name from ch_company c ,ch_manager m where c.m_id=m.m_id and  c.ch_status=0
+   		<if test="ch_name != null and ch_name !='' ">  
+       		and c.ch_name = #{ch_name}  
+    	</if>  
+    	<if test="ch_id != null and ch_id !='' ">  
+       		and c.ch_id = #{ch_id}  
+    	</if>  
+    	<if test="m_id != null and m_id !='' ">  
+       		and c.m_id = #{m_id}  
+    	</if>  
+    	ORDER BY c.ch_id DESC
+	</select>
+	
+	<!-- sjm: and CONCAT(c.ch_name,'',c.ch_id) like #{ch_name} -->
+	<select id="searchListChannel" parameterType="Channel" resultType="SearchBean">  
+    	select c.ch_id id,c.ch_name name from ch_company c where 1=1 and  <![CDATA[ c.ch_name<>'备选']]>
+    	<if test="ch_name != null and ch_name !='' ">  
+       		AND c.ch_name like #{ch_name} 
+    	</if>  
+    	ORDER BY c.ch_id DESC
+	</select>  
+	
+	
+	
+	<insert id="addChannel" parameterType="Channel"
+        useGeneratedKeys="true" keyProperty="ch_id">
+        INSERT INTO ch_company (ch_name,m_id,ch_address,ch_ip,mo_url,mr_url,public_key,private_key,ch_account,ch_passwd,ch_pay_account,ch_cut,show_type,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{ch_name},#{m_id},#{ch_address},#{ch_ip},#{mo_url},#{mr_url},#{public_key},#{private_key},#{ch_account},
+        #{ch_passwd},#{ch_pay_account},#{ch_cut},#{show_type},
+        
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name}  )
+    </insert>
+    
+    <update id="deleteChannel" parameterType="Channel"  >
+        update ch_company set ch_status=1 where ch_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+     <update id="updateChannelTag" parameterType="Channel"  >
+        update ch_company set tag=#{tag} where ch_id in
+        <foreach item="item" index="index" collection="ids" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+       
+    </update>
+    
+    <update id="updateChannel" parameterType="Channel"  >
+        update ch_company set 
+		ch_name=#{ch_name},
+			<if test="m_id != null and m_id !='' ">  
+		m_id=#{m_id},
+		</if> 
+		ch_address=#{ch_address},
+		ch_ip=#{ch_ip},
+		mo_url=#{mo_url},
+		mr_url=#{mr_url},
+		public_key=#{public_key},
+		private_key=#{private_key},
+		ch_account=#{ch_account},
+		ch_passwd=#{ch_passwd},
+		show_type=#{show_type},
+		ch_pay_account=#{ch_pay_account},
+		ch_cut=#{ch_cut},
+		
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where ch_id =#{ch_id}
+       
+    </update>
+    
+    
+       <select id="getChannelProduct" parameterType="ChannelProduct" resultType="ChannelProduct">  
+    	SELECT l.ch_prod_id,c.ch_id,c.ch_name,p.product_id,p.product_name,p.cp_id,p.cp_name 
+    	FROM ch_prod_link l ,ch_company c , cp_product p 
+		WHERE l.ch_id=c.ch_id AND l.product_id=p.product_id 
+   		<if test="ch_id != null and ch_id !='' ">  
+       		and c.ch_id = #{ch_id}  
+    	</if>  
+    	<if test="product_id != null and product_id !='' ">  
+       		and p.product_id = #{product_id}  
+    	</if>  
+	</select>  
+	
+	<insert id="addChannelProduct" parameterType="ChannelProduct"
+        useGeneratedKeys="true" keyProperty="ch_prod_id">
+        INSERT INTO ch_prod_link (ch_id,product_id)
+        VALUES(#{ch_id},#{product_id}  )
+    </insert>
+     <delete id="deleteChannelProduct" parameterType="ChannelProduct"  >
+        delete from ch_prod_link  
+ 		where 1=1 and ch_prod_id in 
+ 		 <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+ 		
+       
+    </delete>
+        <!--ChannelData-->
+   <select id="listChannelData" parameterType="ChannelData" resultType="ChannelData">  
+    	select   a.dater ,a.ch_id,a.ch_data_id,a.data_init,a.data_ret,
+    	a.data_fee,a.data_div,c.ch_name AS ch_name from channel_data a ,ch_company c where c.ch_id=a.ch_id  and 1 = 1  
+   		
+   		<if test="ch_data_id != null and ch_data_id !='' ">  
+       		and a.ch_data_id = #{ch_data_id}  
+    	</if> 
+    	
+    	<if test="ch_id != null and ch_id !='' ">  
+       		and a.ch_id = #{ch_id}  
+    	</if> 
+    	<if test="dater != null and dater !='' ">  
+       		and a.dater = #{dater}  
+    	</if> 
+    	
+    	<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+	       	and (a.dater between #{start_time} and #{end_time} )
+	    </if>
+	    
+	    ORDER BY a.ch_id  DESC  , a.dater DESC
+	    	
+	</select>  
+	
+	<insert id="addChannelData" parameterType="ChannelData"
+        useGeneratedKeys="true" keyProperty="ch_data_id">
+        INSERT INTO channel_data (ch_id,data_init,data_fee,data_div,data_ret ,dater, savetime)
+        VALUES(#{ch_id},#{data_init},#{data_fee},#{data_div},#{data_ret},#{dater},NOW() )
+    </insert>
+    
+     <delete id="deleteChannelData" parameterType="ChannelData"  >
+        delete from channel_data  
+ 		where 1=1 and ch_data_id=#{ch_data_id}
+ 		
+       
+    </delete>
+
+    <update id="updateChannelData" parameterType="ChannelData"  >
+        update channel_data set 
+        data_init=#{data_init},
+        data_fee=#{data_fee},
+		data_div=#{data_div},
+		data_ret=#{data_ret},
+		dater=#{dater},
+		savetime=NOW()
+ 		where ch_data_id =#{ch_data_id}
+       
+    </update>
+    
+         <!--ChannelManager-->
+   <select id="listChannelManager" parameterType="ChannelManager" resultType="ChannelManager">  
+    	select m_id,m_name,show_type ,create_time from  ch_manager where 1=1
+    	<if test="m_id != null and m_id !='' ">  
+       		and m_id = #{m_id}  
+    	</if> 
+    	<if test="m_name != null and m_name !='' ">  
+       		and m_name = #{m_name}  
+    	</if>
+	    	
+	</select>  
+	
+	<insert id="addChannelManager" parameterType="ChannelManager"
+        useGeneratedKeys="true" keyProperty="m_id">
+        INSERT INTO ch_manager (m_name, create_time)
+        VALUES(#{m_name},NOW() )
+    </insert>
+    
+     <delete id="deleteChannelManager" parameterType="ChannelManager"  >
+        delete from ch_manager  
+ 		where 1=1 and m_id=#{m_id}
+ 		
+       
+    </delete>
+
+    <update id="updateChannelManager" parameterType="ChannelManager"  >
+        update ch_manager set 
+        m_name=#{m_name},
+		create_time=NOW()
+ 		where m_id =#{m_id}
+       
+    </update>
+    
+       <!--CpProduct-->
+   <select id="listCpProduct" parameterType="CpProduct" resultType="CpProduct">  
+    	select * from cp_product where 1 = 1  and  product_status=0
+   		<if test="product_name != null and product_name !='' ">  
+       		and product_name = #{product_name}  
+    	</if>  
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and cp_id = #{cp_id}  
+    	</if>  
+    	<if test="product_id != null and product_id !='' ">  
+       		and product_id = #{product_id}  
+    	</if> 
+    	
+	</select>  
+	
+	<insert id="addCpProduct" parameterType="CpProduct"
+        useGeneratedKeys="true" keyProperty="cp_id">
+        INSERT INTO cp_product (cp_name,cp_id,product_name,product_code,product_package,product_fee,is_overfee,is_pop,
+        provincestr,remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{cp_name},#{cp_id},#{product_name},#{product_code},#{product_package},#{product_fee},#{is_overfee},#{is_pop},
+        
+        #{provincestr},#{remarks},NOW(),#{create_name},NOW(),#{update_name}  )
+    </insert>
+    
+    <update id="deleteCpProduct" parameterType="CpProduct"  >
+        update cp_product set product_status=1 where product_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    
+    <update id="updateCpProduct" parameterType="CpProduct"  >
+        update cp_product set 
+        cp_name=#{cp_name},
+        cp_id=#{cp_id},
+		product_name=#{product_name},
+		product_code=#{product_code},
+		product_package=#{product_package},
+		product_fee=#{product_fee},
+		is_overfee=#{is_overfee},
+		is_pop=#{is_pop},
+		provincestr=#{provincestr},
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where product_id =#{product_id}
+       
+    </update>
+    <!-- Sjm: -->
+    <select id="listPackage" parameterType="ProductPackage" resultType="ProductPackage">  
+     	 select id, product_package from cp_product_package pp where pp.product_id=#{product_id}
+     </select>
+    <insert id="addPackage" parameterType="ProductPackage" useGeneratedKeys="true" keyProperty="id">  
+     	INSERT INTO cp_product_package(product_id,product_package)VALUES(#{product_id},#{product_package})
+     </insert>
+    <select id="delPackage" parameterType="ProductPackage" resultType="int">  
+    	delete from cp_product_package where id=#{id}
+     </select>
+     <!-- end -->
+     
+       <!--CpAppfee-->
+   <select id="listCpAppfee" parameterType="CpAppfee" resultType="CpAppfee">  
+    	SELECT a.appfee_id,a.product_id,a.product_name,a.appfee_name,a.appfee_fee,a.appfee_isoverfee,a.appfee_status,a.remarks,
+		a.create_time,a.create_name,a.update_time,a.update_name,b.feeplan_id,b.feeplan_name,b.net_type,b.feeplan_fee,b.feeplan_status
+		 FROM cp_appfee a LEFT OUTER JOIN(
+		SELECT l.appfee_id,l.feeplan_id,p.feeplan_name,p.net_type,p.feeplan_fee,p.feeplan_status FROM cp_feepoint_plan l ,cp_feeplan p WHERE p.feeplan_id = l.feeplan_id 
+		) b ON a.appfee_id=b.appfee_id where 1=1
+   		<if test="appfee_name != null and appfee_name !='' ">  
+       		and a.appfee_name = #{appfee_name}  
+    	</if>  
+    	<if test="product_id != null and product_id !='' ">  
+       		and a.product_id = #{product_id}  
+    	</if>  
+    	<if test="appfee_id != null and appfee_id !='' ">  
+       		and a.appfee_id = #{appfee_id}  
+    	</if>  
+    	
+	</select>  
+	
+	<insert id="addCpAppfee" parameterType="CpAppfee"
+        useGeneratedKeys="true" keyProperty="cp_id">
+        INSERT INTO cp_appfee (product_name,product_id,appfee_name,appfee_fee,appfee_isoverfee,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{product_name},#{product_id},#{appfee_name},#{appfee_fee},#{appfee_isoverfee},
+        
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name}  )
+    </insert>
+    
+    <update id="deleteCpAppfee" parameterType="CpAppfee"  >
+        update cp_appfee set appfee_status=1 where appfee_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    
+    <update id="updateCpAppfee" parameterType="CpAppfee"  >
+        update cp_appfee set 
+        product_name=#{product_name},
+        product_id=#{product_id},
+		appfee_name=#{appfee_name},
+		appfee_fee=#{appfee_fee},
+		appfee_isoverfee=#{appfee_isoverfee},
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where appfee_id =#{appfee_id}
+       
+    </update>
+    
+    
+    
+       <!--CpFeeplan-->
+   <select id="listCpFeeplan" parameterType="CpFeeplan" resultType="CpFeeplan">  
+    	select * from cp_feeplan where 1 = 1  and  feeplan_status=0
+   		<if test="feeplan_name != null and feeplan_name !='' ">  
+       		and feeplan_name = #{feeplan_name}  
+    	</if>  
+    	<if test="feeplan_code != null and feeplan_code !='' ">  
+       		and feeplan_code = #{feeplan_code}  
+    	</if>  
+    	<if test="feeplan_id != null and feeplan_id !='' ">  
+       		and feeplan_id = #{feeplan_id}  
+    	</if>  
+	</select>  
+	
+	<insert id="addCpFeeplan" parameterType="CpFeeplan"
+        useGeneratedKeys="true" keyProperty="feeplan_id">
+        INSERT INTO cp_feeplan (feeplan_code,feeplan_name,net_type,feeplan_fee,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{feeplan_code},#{feeplan_name},#{net_type},#{feeplan_fee},
+        
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name}  )
+    </insert>
+    
+    <update id="deleteCpFeeplan" parameterType="CpFeeplan"  >
+        update cp_feeplan set feeplan_status=1 where feeplan_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+    
+    <update id="updateCpFeeplan" parameterType="CpFeeplan"  >
+        update cp_feeplan set 
+		feeplan_code=#{feeplan_code},
+		feeplan_name=#{feeplan_name},
+		net_type=#{net_type},
+		feeplan_fee=#{feeplan_fee},
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where feeplan_id =#{feeplan_id}
+       
+    </update>
+    
+    
+       <!--CpFeemeasure-->
+   <select id="listCpFeemeasure" parameterType="CpFeemeasure" resultType="CpFeemeasure">  
+    	select * from cp_feemeasure where 1 = 1  and  feemeasure_status=0
+   		<if test="feemeasure_name != null and feemeasure_name !='' ">  
+       		and feemeasure_name = #{feemeasure_name 	 }  
+    	</if>  
+    	<if test="feeplan_id != null and feeplan_id !='' ">  
+       		and feeplan_id = #{feeplan_id}  
+    	</if>  
+    	<if test="feemeasure_id != null and feemeasure_id !='' ">  
+       		and feemeasure_id = #{feemeasure_id}  
+    	</if>  
+    	<if test="feemeasure_fee != null and feemeasure_fee !='' ">  
+       		and feemeasure_fee = #{feemeasure_fee}  
+    	</if> 
+	</select>  
+	
+	   <select id="listCpFeemeasureItem" parameterType="CpFeemeasureItem" resultType="CpFeemeasureItem">  
+    	select a.feemeasure_id ,a.feemeasure_item_id ,  a.feemeasure_name,a.feemeasure_op,a.feemeasure_is_pop,a.link_id,
+        a.feemeasure_fee,a.feemeasure_province,a.feemeasure_province_name,a.feemeasure_city,  a.cp_item_id, a.item_status,
+        a.remarks,a.create_time,a.create_name,a.update_time,a.update_name,b.feeplan_id,b.feeplan_name 
+        from (
+        	SELECT i.*,l.link_id, l.cp_item_id,  l.item_status FROM cp_feemeasure_item i LEFT OUTER JOIN  (SELECT a.feemeasure_item_id, a.link_id ,a.cp_item_id,b.item_status FROM cp_makefee_link a ,cp_makefee_item b WHERE a.cp_item_id = b.cp_item_id) l  ON i.feemeasure_item_id =  l.feemeasure_item_id
+        ) a , cp_feemeasure b  where a.feemeasure_id = b.feemeasure_id  and  a.feemeasure_status=0
+   		<if test="feemeasure_name != null and feemeasure_name !='' ">  
+       		and a.feemeasure_name = #{feemeasure_name 	 }  
+    	</if>  
+
+    	<if test="feeplan_id != null and feeplan_id !='' ">  
+       		and b.feeplan_id = #{feeplan_id}  
+    	</if>  
+    	<if test="feemeasure_id != null and feemeasure_id !='' ">  
+       		and a.feemeasure_id = #{feemeasure_id}  
+    	</if>  
+    	<if test="feemeasure_op != null and feemeasure_op !='' ">  
+       		and a.feemeasure_op = #{feemeasure_op}  
+    	</if> 
+    	<if test="feemeasure_province != null and feemeasure_province !='' ">  
+       		and a.feemeasure_province = #{feemeasure_province}  
+    	</if> 
+    	<if test="feemeasure_item_id != null and feemeasure_item_id !='' ">  
+       		and a.feemeasure_item_id = #{feemeasure_item_id}  
+    	</if> 
+    	
+    	<if test="feemeasure_fee != null and feemeasure_fee !='' ">  
+       		and a.feemeasure_fee = #{feemeasure_fee}  
+    	</if> 
+    	
+    		order by a.feemeasure_item_id DESC
+	</select>  
+	
+	<insert id="addCpFeemeasure" parameterType="CpFeemeasure"
+        useGeneratedKeys="true" keyProperty="feemeasure_id">
+      
+        INSERT INTO cp_feemeasure (feeplan_id,feeplan_name,feemeasure_name,feemeasure_op,feemeasure_is_pop,
+        feemeasure_fee,feemeasure_province,feemeasure_province_name,feemeasure_city,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{feeplan_id},#{feeplan_name},#{feemeasure_name},#{feemeasure_op},#{feemeasure_is_pop},
+        #{feemeasure_fee},#{feemeasure_province},#{feemeasure_province_name},#{feemeasure_city},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name}  )
+    </insert>
+    
+    	<insert id="addCpFeemeasureItem" parameterType="CpFeemeasureItem"
+        useGeneratedKeys="true" keyProperty="feemeasure_item_id">
+        INSERT INTO cp_feemeasure_item (feemeasure_id,feemeasure_name,feemeasure_op,feemeasure_is_pop,
+        feemeasure_fee,feemeasure_province,feemeasure_province_name,feemeasure_city,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{feemeasure_id},#{feemeasure_name},#{feemeasure_op},#{feemeasure_is_pop},
+        #{feemeasure_fee},#{feemeasure_province},#{feemeasure_province_name},#{feemeasure_city},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name}  )
+    </insert>
+    
+    <update id="deleteCpFeemeasure" parameterType="CpFeemeasure"  >
+        update cp_feemeasure set feemeasure_status=1 where feemeasure_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+     <update id="deleteCpFeemeasureItem" parameterType="CpFeemeasureItem"  >
+        update cp_feemeasure_item set feemeasure_status=1 where feemeasure_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+     <update id="deleteCpFeemeasureItemByMeasureID" parameterType="CpFeemeasureItem"  >
+        delete from cp_feemeasure_item  where feemeasure_id =#{feemeasure_id}
+    </update>
+    
+    
+    <update id="updateCpFeemeasure" parameterType="CpFeemeasure"  >
+        update cp_feemeasure set 
+		feeplan_id=#{feeplan_id},
+		feeplan_name=#{feeplan_name},
+		feemeasure_name=#{feemeasure_name},
+		feemeasure_op=#{feemeasure_op},
+		feemeasure_is_pop=#{feemeasure_is_pop},
+		feemeasure_fee=#{feemeasure_fee},
+		feemeasure_province=#{feemeasure_province},
+		feemeasure_city=#{feemeasure_city},
+
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where feemeasure_id =#{feemeasure_id}
+       
+    </update>
+    
+        <update id="updateCpFeemeasureItem" parameterType="CpFeemeasureItem"  >
+        update cp_feemeasure_item set 
+
+		feemeasure_op=#{feemeasure_op},
+		feemeasure_is_pop=#{feemeasure_is_pop},
+		feemeasure_fee=#{feemeasure_fee},
+		feemeasure_province=#{feemeasure_province},
+		feemeasure_city=#{feemeasure_city},
+
+		remarks=#{remarks},
+		update_time=NOW(),
+		update_name=#{update_name}
+ 		where feemeasure_item_id =#{feemeasure_item_id}
+       
+    </update>
+    
+
+          <!--Province-->
+   <select id="listProvince" parameterType="Province" resultType="Province">  
+    	select * from platform_province where 1 = 1  
+   		<if test="province_name != null and province_name !='' ">  
+       		and province_name = #{province_name}  
+    	</if>  
+    	<if test="province_code != null and province_code !='' ">  
+       		and province_code = #{province_code}  
+    	</if>  
+    	<if test="province_id != null and province_id !='' ">  
+       		and province_id = #{province_id}  
+    	</if>  
+	</select>  
+	
+	      <!--City-->
+   <select id="listCity" parameterType="City" resultType="City">  
+    	select * from platform_city where 1 = 1  
+   		<if test="province_name != null and province_name !='' ">  
+       		and province_name = #{province_name}  
+    	</if>  
+    	<if test="province_code != null and province_code !='' ">  
+       		and province_code = #{province_code}  
+    	</if>  
+    	<if test="province_id != null and province_id !='' ">  
+       		and province_id = #{province_id}  
+    	</if>  
+    	<if test="city_name != null and city_name !='' ">  
+       		and city_name = #{city_name}  
+    	</if>  
+    	<if test="city_code != null and city_code !='' ">  
+       		and city_code = #{city_code}  
+    	</if>  
+    	<if test="city_id != null and city_id !='' ">  
+       		and city_id = #{city_id}  
+    	</if>  
+	</select>  
+	
+	
+	
+	
+	
+	  
+       <!--CpMakefeeLink-->
+   <select id="listCpMakefeeLink" parameterType="CpMakefeeLink" resultType="CpMakefeeLink">  
+    	SELECT link_id, CONCAT(IFNULL(item.feecode_number,'null'),'-->',IFNULL(item.command,'null')) AS cp_item_name , item.cp_item_id
+		,measure.feemeasure_id,measure.feemeasure_item_id,measure.feemeasure_name,item.open_province_id AS province, item.open_province_name AS province_name,
+		link.remarks,link.update_time,link.cp_item_count
+		FROM cp_makefee_item item ,cp_feemeasure_item measure , cp_makefee_link link
+		WHERE item.cp_item_id=link.cp_item_id AND measure.feemeasure_item_id=link.feemeasure_item_id
+    	<if test="feemeasure_id != null and feemeasure_id !='' ">  
+       		and feemeasure_id = #{feemeasure_id}  
+    	</if>  
+	</select>  
+	
+	  <select id="getCpMakefeeLinks" parameterType="CpMakefeeLink" resultType="CpMakefeeLink">  
+    	SELECT  a.feemeasure_item_id,a.feemeasure_id ,b.cp_item_id , a.feemeasure_province AS province FROM cp_feemeasure_item a ,cp_makefee_item b 
+		WHERE  a.feemeasure_province = b.open_province_id AND  a.feemeasure_op = b.feecode_op  AND
+		a.feemeasure_id=#{feemeasure_id} AND b.command_id=#{command_id} AND b.feecode_id=#{feecode_id} 	
+	</select>  
+	
+	
+	
+	<insert id="addCpMakefeeLink" parameterType="CpMakefeeLink"
+        useGeneratedKeys="true" keyProperty="link_id">
+        INSERT INTO cp_makefee_link (feemeasure_id,feemeasure_item_id,cp_item_id,cp_item_count,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{feemeasure_id},#{feemeasure_item_id},#{cp_item_id},#{cp_item_count},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name}  )
+    </insert>
+    
+    <delete id="deleteCpMakefeeLink" parameterType="CpMakefeeLink"  >
+        delete from cp_makefee_link  where link_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </delete>
+    
+    
+    <delete id="deleteCpMakefeeLinkByMeasureIdOrlinkId" parameterType="CpMakefeeLink"  >
+        delete from cp_makefee_link  
+ 		where 1=1 
+ 		<if test="feemeasure_item_id != null and feemeasure_item_id !='' ">  
+       		and feemeasure_item_id = #{feemeasure_item_id}  
+    	</if>  
+		<if test="feemeasure_id != null and feemeasure_id !='' ">  
+       		and feemeasure_id = #{feemeasure_id}  
+    	</if>  
+		<if test="link_id != null and link_id !='' ">  
+       		and link_id = #{link_id}  
+    	</if>  
+       
+    </delete>
+
+    
+           <!--FeepointLink-->
+           <!--
+   <select id="listFeepointLink1" parameterType="FeepointLink" resultType="FeepointLink">  
+    	 SELECT p.feepointplan_id ,a.appfee_id ,a.product_name, a.appfee_name,a.appfee_fee,f.feemeasure_id,f.feemeasure_name,
+		p.remarks,p.update_time
+		 FROM cp_feepoint_plan p,cp_appfee a,cp_feemeasure f 
+		 WHERE p.appfee_id = a.appfee_id AND p.feemeasure_id=f.feemeasure_id
+    	<if test="feemeasure_id != null and feemeasure_id !='' ">  
+       		and p.feemeasure_id = #{feemeasure_id}  
+    	</if>  
+	</select>  
+	-->
+	 <select id="listFeepointLink" parameterType="FeepointLink" resultType="FeepointLink">  
+    	 SELECT p.feepointplan_id ,a.appfee_id ,a.product_name, a.appfee_name,a.appfee_fee,f.feeplan_id,f.feeplan_name,
+		p.remarks,p.update_time
+		 FROM cp_feepoint_plan p,cp_appfee a,cp_feeplan f 
+		 WHERE p.appfee_id = a.appfee_id AND p.feeplan_id=f.feeplan_id
+    	<if test="feeplan_id != null and feeplan_id !='' ">  
+       		and p.feeplan_id = #{feeplan_id}  
+    	</if>  
+	</select>  
+	
+	
+	<insert id="addFeepointLink" parameterType="FeepointLink"
+        useGeneratedKeys="true" keyProperty="feepointplan_id">
+        INSERT INTO cp_feepoint_plan (feeplan_id,feemeasure_id,appfee_id,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{feeplan_id},#{feemeasure_id},#{appfee_id},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name}  )
+    </insert>
+    
+     <update id="deleteFeepointLink" parameterType="FeepointLink"  >
+        delete from cp_feepoint_plan  where appfee_id=#{appfee_id}
+    </update>
+    
+    <!-- SpFeecodeLimit-->
+     <select id="listSpFeecodeLimit" parameterType="SpFeecodeLimit" resultType="SpFeecodeLimit">  
+    	SELECT fc.sp_id,fc.sp_name,fc.feecode_id,fc.feecode_name,fc.feecode_code,fc.feecode_number,
+		lim.limit_id,lim.month_num,lim.day_num,lim.single_month_num,lim.single_day_num,lim.limit_province,
+		lim.limit_city,lim.limit_time_str,lim.limit_hour_str,lim.remarks,lim.rec_month_num,lim.rec_day_num,
+		lim.update_time, lim.create_name, lim.hour_num 
+		FROM sp_feecode_limit lim,sp_feecode fc WHERE  lim.feecode_id=fc.feecode_id and   1=1
+   	
+   		<if test="limit_id != null and limit_id !='' ">  
+       		and limit_id = #{limit_id}  
+    	</if>
+    	
+    	<if test="feecode_id != null and feecode_id !='' ">  
+       		and lim.feecode_id = #{feecode_id}  
+    	</if>
+    	<if test="feecode_number != null and feecode_number !='' ">  
+       		and fc.feecode_number = #{feecode_number}  
+    	</if>
+    	
+    	<if test="limit_status != null and limit_status !='' ">  
+       		and limit_status = #{limit_status}  
+    	</if>
+    	<if test="sp_id != null and sp_id !='' ">  
+       		and fc.sp_id = #{sp_id}  
+    	</if>
+	</select>  
+	
+	<insert id="addSpFeecodeLimit" parameterType="SpFeecodeLimit"
+        useGeneratedKeys="true" keyProperty="limit_id">
+        INSERT INTO sp_feecode_limit (feecode_id,month_num,day_num,single_month_num,single_day_num,
+        limit_province,limit_city,limit_start_time,limit_end_time,limit_time_str,limit_start_hour,limit_end_hour,limit_hour_str,
+        remarks,create_time,create_name,update_time,update_name,rec_month_num,rec_day_num,hour_num)
+        VALUES(#{feecode_id},#{month_num},#{day_num},#{single_month_num},#{single_day_num},
+        #{limit_province},#{limit_city},#{limit_start_time},#{limit_end_time},#{limit_time_str},#{limit_start_hour},#{limit_end_hour},#{limit_hour_str},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name},#{rec_month_num},#{rec_day_num},#{hour_num})
+    </insert>
+    
+    <update id="deleteSpFeecodeLimit" parameterType="SpFeecodeLimit"  >
+        delete from sp_feecode_limit where limit_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    
+ 
+    
+    <update id="updateSpFeecodeLimit" parameterType="SpFeecodeLimit"  >
+        update sp_feecode_limit set 
+        feecode_id=#{feecode_id},
+		month_num=#{month_num},
+		day_num=#{day_num},
+		rec_month_num=#{rec_month_num},
+		rec_day_num=#{rec_day_num},
+		single_month_num=#{single_month_num},
+		single_day_num=#{single_day_num},
+		limit_province=#{limit_province},
+		limit_city=#{limit_city},
+		limit_start_time=#{limit_start_time},
+		limit_end_time=#{limit_end_time},
+		limit_time_str=#{limit_time_str},
+		limit_start_hour=#{limit_start_hour},
+		limit_end_hour=#{limit_end_hour},
+		limit_hour_str=#{limit_hour_str},
+		hour_num=#{hour_num},
+		remarks=#{remarks},
+		update_time=NOW(),
+		create_name=#{create_name},
+		update_name=#{update_name}
+ 		where limit_id =#{limit_id}
+       
+    </update>
+    
+    
+    <select id="listSpFeecodeProvinceLimit" parameterType="SpFeecodeProvinceLimit" resultType="SpFeecodeProvinceLimit">  
+    	SELECT lim.pro_limit_id,
+		lim.limit_id,lim.pro_month_num,lim.pro_day_num,lim.pro_single_month_num,lim.pro_single_day_num,lim.province,lim.province_name,
+		lim.pro_limit_city,lim.pro_limit_time_str,lim.pro_limit_hour_str,lim.remarks,
+		lim.update_time
+		FROM sp_feecode_province_limit lim  WHERE   1=1 and limit_id = #{limit_id}
+		<if test="province != null and province !='' ">   
+			and lim.province = #{province}
+		</if>
+	</select>  
+	
+	<!-- sjm: -->
+	<select id="getSpFeecodeProvinceLimit" parameterType="SpFeecodeProvinceLimit" resultType="SpFeecodeProvinceLimit">
+	SELECT lim.pro_limit_id,
+		lim.limit_id,lim.pro_month_num,lim.pro_day_num,lim.pro_single_month_num,lim.pro_single_day_num,lim.province,lim.province_name,
+		lim.pro_limit_city,lim.pro_limit_time_str,lim.pro_limit_hour_str,lim.remarks,
+		lim.update_time
+		FROM sp_feecode_province_limit lim,cp_makefee_item cp,sp_feecode_limit sp WHERE cp.feecode_id=sp.feecode_id
+		and sp.limit_id=lim.limit_id and cp.feecode_id=#{limit_id} and lim.province = #{province} and open_province_id=#{province}
+	</select>
+	
+	<insert id="addSpFeecodeProvinceLimit" parameterType="SpFeecodeProvinceLimit"
+        useGeneratedKeys="true" keyProperty="pro_limit_id">
+        INSERT INTO sp_feecode_province_limit (limit_id,pro_month_num,pro_day_num,pro_single_month_num,pro_single_day_num,
+        province,province_name,pro_limit_city,pro_limit_start_time,pro_limit_end_time,pro_limit_time_str,pro_limit_start_hour,
+        pro_limit_end_hour,pro_limit_hour_str,
+        remarks,create_time,create_name,update_time,update_name)
+        VALUES(#{limit_id},#{pro_month_num},#{pro_day_num},#{pro_single_month_num},#{pro_single_day_num},
+        #{province},#{province_name},#{pro_limit_city},#{pro_limit_start_time},#{pro_limit_end_time},#{pro_limit_time_str},
+        #{pro_limit_start_hour},#{pro_limit_end_hour},#{pro_limit_hour_str},
+        #{remarks},NOW(),#{create_name},NOW(),#{update_name} )
+    </insert>
+    
+    <update id="updateSpFeecodeProvinceLimit" parameterType="SpFeecodeProvinceLimit"  >
+        update sp_feecode_province_limit set 
+		pro_month_num=#{pro_month_num},
+		pro_day_num=#{pro_day_num},
+		pro_limit_city=#{pro_limit_city},
+		pro_single_month_num=#{pro_single_month_num},
+		pro_single_day_num=#{pro_single_day_num},
+		pro_limit_start_time=#{pro_limit_start_time},
+		pro_limit_end_time=#{pro_limit_end_time},
+		pro_limit_time_str=#{pro_limit_time_str},
+		pro_limit_start_hour=#{pro_limit_start_hour},
+		pro_limit_end_hour=#{pro_limit_end_hour},
+		pro_limit_hour_str=#{pro_limit_hour_str},
+		remarks=#{remarks},
+		update_time=NOW(),
+		update_name=#{update_name}
+ 		where pro_limit_id =#{pro_limit_id}
+       
+    </update>
+       <update id="deleteSpFeecodeProvinceLimit" parameterType="SpFeecodeProvinceLimit"  >
+        update sp_feecode_province_limit set pro_limit_status=-9 where limit_id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+    <!--  -->
+        
+    <select id="getFeecodeStatList" parameterType="FeecodeStat" resultType="FeecodeStat">  
+	    SELECT dater,op,province_id ,province_name ,sp_name,feecode_id,feecode_name,feecode_number,feecode_fee,command,succ_calls,succ_users
+		FROM(
+		SELECT SUBSTR(da.savetime,1,10) dater ,da.op, p.province_id,p.province_name,f.sp_name,f.feecode_id,f.feecode_name ,da.feecode_number,f.feecode_fee,da.command,SUM(num) succ_calls,COUNT(DISTINCT IMSI) succ_users
+		FROM mobile_filter_log da, platform_province p ,sp_feecode f WHERE da.province=p.province_id AND da.feecode_number=f.feecode_number AND check_stat=0
+		GROUP BY SUBSTR(da.savetime,1,10),da.op,p.province_id,province_name,f.sp_name,f.feecode_id,f.feecode_name , da.feecode_number,da.command 
+		ORDER BY SUBSTR(da.savetime,1,10),da.op,p.province_id,province_name,f.sp_name,f.feecode_id,f.feecode_name , da.feecode_number,da.command 
+		) a where 1=1
+		<if test="dater != null and dater !='' ">  
+       		and dater = #{dater}  
+    	</if>
+    	
+    	<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and (dater between #{start_time} and #{end_time} )
+    	</if>
+    	
+    	<if test="feecode_id != null and feecode_id !='' ">  
+       		and feecode_id = #{feecode_id}  
+    	</if>
+    	
+    	<if test="province_id != null and province_id !='' ">  
+       		and province_id = #{province_id}  
+    	</if>
+   		ORDER BY dater DESC ,op ASC,sp_name ASC ,feecode_id ASC ,command ASC ,province_id ASC
+	</select>  
+	
+	  <select id="getCallStatList" parameterType="CallStat" resultType="CallStat">  
+	  <!-- 
+	  		SELECT dater,calls FROM (	 
+			SELECT SUBSTR(create_time,1,10) AS dater,cpinfo_id , COUNT(DISTINCT mobile_imsi) AS calls FROM 
+			sdk_init_log WHERE cpinfo_id=#{cp_id} GROUP BY SUBSTR(create_time,1,10),cpinfo_id  		
+			) a WHERE 1=1
+		<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and (dater between #{start_time} and #{end_time} )
+    	</if>
+    	
+		 ORDER BY dater -->
+		 
+		 SELECT d.ch_id AS cp_id,c.ch_name AS cp_name ,data_init,data_fee,data_div,data_ret ,d.dater,c.show_type 
+		 FROM channel_data d ,ch_company c , ch_manager m 
+		  WHERE d.ch_id=c.ch_id  and c.m_id=m.m_id 
+		 <if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and (d.dater between #{start_time} and #{end_time} )
+    	</if>
+    	
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and c.ch_id=#{cp_id} 
+    	</if>
+    	
+    	<if test="m_id != null and m_id !='' ">  
+       		and m.m_id= #{m_id}  
+    	</if>
+    	
+				
+	</select> 
+	
+	 <select id="getAllCallStatList_old" parameterType="CallStat" resultType="CallStat">  	 
+		SELECT ch_name AS cp_name,datas.cp_id,appfee_id,dater,succ_calls,succ_users,fail_calls,fail_users,all_calls,all_users
+		FROM(
+		SELECT  alls.cpinfo_id AS cp_id,alls.appfee_id,alls.dater ,detail.succ_calls,detail.succ_users,detail.fail_calls ,detail.fail_users ,alls.all_calls ,alls.all_users FROM 
+		(
+		SELECT fail.cpinfo_id,fail.appfee_id,fail.dater,succ.succ_calls,succ.succ_users,fail.fail_calls ,fail.fail_users FROM 		
+		( SELECT CPINFO_ID,appfee_id, SUBSTR(create_time,1,10) AS dater,COUNT(*) AS fail_calls ,COUNT(DISTINCT mobile_imsi) AS fail_users FROM sdk_requst_log WHERE error_code > 0 
+	 		GROUP BY CPINFO_ID,appfee_id,SUBSTR(create_time,1,10)
+		) fail ,
+		(SELECT CPINFO_ID,appfee_id, SUBSTR(create_time,1,10) AS dater,COUNT(*) AS succ_calls,COUNT(DISTINCT mobile_imsi) AS succ_users FROM sdk_requst_log WHERE error_code = 0 
+		   GROUP BY CPINFO_ID,appfee_id,SUBSTR(create_time,1,10)
+		) succ
+		WHERE fail.cpinfo_id= succ.cpinfo_id AND fail.appfee_id=succ.appfee_id AND fail.dater=succ.dater
+		) detail,
+		(
+		SELECT CPINFO_ID,appfee_id, SUBSTR(create_time,1,10) dater,COUNT(*) all_calls,COUNT(DISTINCT mobile_imsi) all_users FROM sdk_requst_log  GROUP BY CPINFO_ID,appfee_id,SUBSTR(create_time,1,10)
+		) alls 
+		WHERE detail.cpinfo_id = alls.cpinfo_id AND detail.appfee_id = alls.appfee_id AND detail.dater=alls.dater
+		) datas ,ch_company ch WHERE datas.cp_id=ch.ch_id 
+		<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and (dater between #{start_time} and #{end_time} )
+    	</if>
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and datas.cp_id = #{cp_id}  
+    	</if>
+    	
+    	<if test="cp_name != null and cp_name !='' ">  
+       		and cp_name like '%#{cp_name}%'  
+    	</if>
+    	
+    	order by dater DESC		
+	</select> 
+	
+	 <select id="getProvinceCallStatListHis" parameterType="CallStat" resultType="CallStat">  	
+	 	SELECT  * FROM cp_province_call_stat
+	
+	WHERE 1=1
+		<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and (dd.dater between #{start_time} and #{end_time} )
+    	</if>
+    	
+    	<if test="op != null and op !='' ">  
+       		and op = #{op}  
+    	</if>
+    	
+    	
+    	
+	 </select> 
+	 
+	 <select id="getProvinceCallStatList" parameterType="CallStat" resultType="CallStat">  	
+	 	SELECT dd.dater,dd.province_name,dd.op,IFNULL(aa.initnum,0) AS initnum,succ_calls,succ_users,all_calls,all_users FROM
+		(	
+			SELECT   alls.province_name  ,alls.op,alls.dater ,IFNULL(detail.succ_calls,0) AS succ_calls,
+			IFNULL(detail.succ_users,0) AS succ_users, IFNULL(alls.all_calls,0) AS all_calls  ,IFNULL(alls.all_users,0) AS all_users FROM 
+			(
+			SELECT IFNULL(province_name,'未知') AS province_name, op,SUBSTR(create_time,1,10) dater,COUNT(*) all_calls,COUNT(DISTINCT mobile_imsi) all_users
+			FROM sdk_requst_log  
+			GROUP BY  province_name,op,SUBSTR(create_time,1,10)
+			) alls LEFT OUTER JOIN
+			(
+			SELECT  IFNULL(province_name,'未知') AS province_name, op,SUBSTR(create_time,1,10) AS dater,COUNT(*) AS succ_calls,COUNT(DISTINCT mobile_imsi) AS succ_users     FROM sdk_requst_log WHERE error_code = 0 
+				GROUP BY  province_name,op,SUBSTR(create_time,1,10)
+				
+			) detail
+			
+			ON   detail.province_name = alls.province_name AND detail.op=alls.op AND detail.dater=alls.dater 
+		) dd  LEFT OUTER JOIN
+		(
+		SELECT SUBSTR(create_time,1,10) AS dater,IFNULL(province_name,'未知') AS province_name,op,COUNT(DISTINCT mobile_imsi) AS initnum
+		FROM sdk_init_log GROUP BY SUBSTR(create_time,1,10),province_name,op
+	) aa  ON  dd.dater=aa.dater AND dd.province_name = aa.province_name AND dd.op=aa.op
+	
+	WHERE 1=1
+		<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and (dd.dater between #{start_time} and #{end_time} )
+    	</if>
+    	
+    	<if test="op != null and op !='' ">  
+       		and dd.op = #{op}  
+    	</if>
+    	
+    	
+	 </select> 
+	 	
+	 <select id="getReqCallStatList" parameterType="CallStat" resultType="CallStat">  	 
+		
+SELECT cp_name,cp_id,package AS packager,product_id,product_name,dater,succ_calls,succ_users,all_calls,all_users FROM
+(
+SELECT ch_name AS cp_name,datas.cp_id AS cp_id,package ,p.product_id,p.product_name,dater,IFNULL(succ_calls,0) AS succ_calls,IFNULL(succ_users,0) AS succ_users,all_calls,all_users
+	FROM(
+		
+	SELECT  alls.cpinfo_id AS cp_id,alls.package,alls.dater ,detail.succ_calls,detail.succ_users,detail.fail_calls ,detail.fail_users ,alls.all_calls ,alls.all_users FROM 
+		(
+		SELECT CPINFO_ID,package, SUBSTR(create_time,1,10) dater,COUNT(*) all_calls,COUNT(DISTINCT mobile_imsi) all_users FROM sdk_requst_log  
+		WHERE SUBSTR(create_time,1,10) = #{start_time}
+ 
+	GROUP BY CPINFO_ID,package,SUBSTR(create_time,1,10)
+		) alls LEFT OUTER JOIN
+		(
+		SELECT CPINFO_ID,package, SUBSTR(create_time,1,10) AS dater,COUNT(*) AS succ_calls,COUNT(DISTINCT mobile_imsi) AS succ_users  ,0  AS fail_calls ,0 AS fail_users  FROM sdk_requst_log WHERE error_code = 0 
+			AND SUBSTR(create_time,1,10) = #{start_time}
+			GROUP BY CPINFO_ID,package,SUBSTR(create_time,1,10)
+			
+		) detail
+		
+		ON detail.cpinfo_id = alls.cpinfo_id AND detail.package = alls.package AND detail.dater=alls.dater
+		) datas ,ch_company ch ,cp_product p WHERE datas.cp_id=ch.ch_id and datas.package=p.product_package
+	) aa WHERE 1=1
+	
+	
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and cp_id = #{cp_id}  
+    	</if>
+    	
+	  
+
+	</select> 
+	
+	
+		 <select id="getInitCallStatList" parameterType="CallStat" resultType="CallStat">  	 
+	select dater ,cp_id,ch_name AS cp_name,package AS packager ,product_id,product_name,initnum from (
+	SELECT dater ,cpinfo_id AS cp_id,package,product_id,product_name,COUNT(DISTINCT mobile_imsi) AS initnum FROM 
+	(
+	SELECT SUBSTR(a.create_time,1,10) dater,a.cpinfo_id ,a.package,p.product_id,p.product_name,a.mobile_imsi
+	 FROM sdk_init_log  a ,cp_product p 
+	WHERE a.package = p.product_package  AND SUBSTR(a.create_time,1,10) = #{start_time}
+	) a GROUP BY dater ,cpinfo_id,package,product_id,product_name
+	) aa ,ch_company ch where 1=1 and aa.cp_id=ch.ch_id 
+	
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and cp_id = #{cp_id}  
+    	</if>
+    	
+	 
+
+	</select> 
+	
+	
+		 <select id="getInitNoFeeStatList" parameterType="CallStat" resultType="CallStat">  	 
+		SELECT SUBSTR(create_time,1,10) as dater, ccp_id,COUNT(DISTINCT mobile_imsi) as initnum  FROM sdk_init_log 
+		WHERE deal_type=1 
+    	
+    	<if test="start_time != null and start_time !='' ">  
+       		AND SUBSTR( create_time,1,10) = #{start_time}
+    	</if>
+    	
+    	
+		GROUP BY SUBSTR(create_time,1,10), ccp_id
+
+	</select>
+	
+	
+		 <select id="getInitNoFeeStatListHis" parameterType="CallStat" resultType="CallStat">  	 
+		select dater ,ccp_id,initnum from sp_cp_nofeeinit_stat where 1=1 
+	
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and cp_id = #{cp_id}  
+    	</if>
+    	<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and (dater between #{start_time} and #{end_time} )
+    	</if>
+	 
+
+	</select>
+	
+	
+	<!-- and b.tag = #{tag}   -->
+	 <select id="getAllCallStatListHis" parameterType="CallStat" resultType="CallStat">  	 
+		SELECT a.* FROM sp_cp_call_stat a LEFT JOIN cp_chstatus cph on cph.chid=a.cp_id and cph.ccpid=a.ccp_id,ch_company b where 1=1  and a.cp_id=b.ch_id
+	
+	<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and (dater between #{start_time} and #{end_time} )
+    	</if>
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and cp_id = #{cp_id}  
+    	</if>
+    	<if test="tag != null and tag !='' ">  
+       		and ifnull(cph.status,1)=#{tag}
+    	</if>
+    	<if test="product_id != null and product_id !='' ">  
+       		and product_id = #{product_id}  
+    	</if>
+    	<if test="cp_name != null and cp_name !='' ">  
+       		and cp_name like CONCAT('%',#{cp_name},'%') 
+    	</if>
+	 ORDER BY dater DESC
+
+	</select> 
+	
+	<!-- sjm:upd start -->
+	
+	 <select id="getSdkRLByd" parameterType="CallStat" resultType="CallStat">  
+	 	SELECT #{start_time} dater,alls.cpinfo_id cp_id,alls.ccp_id,alls.package packager,detail.succ_calls,detail.succ_users,alls.all_calls,alls.all_users 
+		 FROM  sp_cp_today_allcalls  alls LEFT OUTER JOIN  sp_cp_today_succalls detail ON detail.cpinfo_id = alls.cpinfo_id AND detail.ccp_id = alls.ccp_id AND detail.package = alls.package 	 
+	 </select>
+	 
+	 <select id="getSdkRLByd_11" parameterType="CallStat" resultType="CallStat">  
+	 	SELECT #{start_time} dater,alls.cpinfo_id cp_id,alls.ccp_id,alls.package packager,detail.succ_calls,detail.succ_users,detail.fail_calls,detail.fail_users,alls.all_calls,alls.all_users 
+		 FROM (
+				 SELECT cpinfo_id,IFNULL(ccp_id,cpinfo_id) ccp_id,package,COUNT(*) all_calls,COUNT(DISTINCT mobile_imsi) all_users FROM sdk_requst_log  
+				 WHERE package IS NOT NULL AND create_time between #{start_time} and #{end_time} 
+				 <if test="cp_id != null and cp_id !='' ">  
+       				and cpinfo_id= #{cp_id}  
+    			</if>
+				 GROUP BY CPINFO_ID,ccp_id,package 
+		 ) alls LEFT OUTER JOIN (
+				 SELECT cpinfo_id,IFNULL(ccp_id,cpinfo_id) ccp_id,package,COUNT(*) succ_calls,COUNT(DISTINCT mobile_imsi) succ_users,0 fail_calls ,0 fail_users FROM sdk_requst_log 
+				 WHERE error_code = 0 AND create_time between #{start_time} and #{end_time} 
+				 <if test="cp_id != null and cp_id !='' ">  
+       				and cpinfo_id= #{cp_id}  
+    			 </if>
+				 GROUP BY CPINFO_ID,ccp_id,package	
+		 ) detail ON detail.cpinfo_id = alls.cpinfo_id AND detail.ccp_id = alls.ccp_id AND detail.package = alls.package 	 
+	 </select>
+	 
+	 
+	 <select id="getSdkILByd_11" parameterType="CallStat" resultType="CallStat">  
+	 	SELECT #{start_time} dater,a.cpinfo_id cp_id,IFNULL(a.ccp_id,a.cpinfo_id) ccp_id,a.package packager, COUNT(DISTINCT a.mobile_imsi ) initnum
+		 FROM sdk_init_log a WHERE create_time between #{start_time} and #{end_time} 
+		 <if test="cp_id != null and cp_id !='' ">  
+       	      and cpinfo_id= #{cp_id}  
+    	</if>
+		 GROUP BY a.cpinfo_id ,a.ccp_id,a.package
+	 </select>
+	 
+	  <select id="getSdkILByd" parameterType="CallStat" resultType="CallStat">  
+	 	 select dater,cpinfo_id as cp_id ,ccp_id,package as packager ,initnum from sp_cp_today_inits where 1=1 
+		 <if test="cp_id != null and cp_id !='' ">  
+       	      and cpinfo_id= #{cp_id}  
+    	</if>
+	 </select>
+	 
+	 
+	 <select id="getCpchsta" parameterType="CallStat" resultType="CallStat">  
+	 	SELECT chid cp_id,ccpid ccp_id,status tag FROM cp_chstatus where status=2  
+	 </select>
+	 
+	  <select id="getAllCompany" parameterType="CallStat" resultType="CallStat">  
+	  	SELECT ch_id cp_id,ch_name cp_name FROM ch_company
+	 </select>
+	 
+	  <select id="getAllProduct" parameterType="CallStat" resultType="CallStat"> 
+	  	SELECT product_package packager,product_name FROM cp_product 
+	 </select>
+	<!-- sjm:upd end-->
+	 <select id="getAllCallStatList_11" parameterType="CallStat" resultType="CallStat">  	 
+		SELECT #{start_time} dater,aa.cpinfo_id AS cp_id,aa.ccp_id,ch_name AS cp_name,package,p.product_name,initnum,succ_calls,succ_users,fail_calls,fail_users,all_calls,all_users
+		FROM (
+			SELECT  calls.cpinfo_id, calls.ccp_id,calls.package,initnum,succ_calls,succ_users,fail_calls,fail_users,all_calls,all_users
+			FROM (
+	    		SELECT  alls.cpinfo_id  ,alls.ccp_id,alls.package ,detail.succ_calls,detail.succ_users,detail.fail_calls ,detail.fail_users ,alls.all_calls ,alls.all_users FROM 
+				(
+					SELECT CPINFO_ID,IFNULL(ccp_id,CPINFO_ID) AS ccp_id,package,COUNT(*) all_calls,COUNT(DISTINCT mobile_imsi) all_users FROM sdk_requst_log  
+					WHERE package IS NOT NULL AND SUBSTR(create_time,1,10)= #{start_time} GROUP BY CPINFO_ID,ccp_id,package
+				) alls LEFT OUTER JOIN
+				(
+					SELECT CPINFO_ID,IFNULL(ccp_id,CPINFO_ID) AS ccp_id,package,COUNT(*) AS succ_calls,COUNT(DISTINCT mobile_imsi) AS succ_users  ,0  AS fail_calls ,0 AS fail_users  FROM sdk_requst_log 
+					WHERE error_code = 0 AND SUBSTR(create_time,1,10)= #{start_time} GROUP BY CPINFO_ID,ccp_id,package	
+				) detail
+				ON detail.cpinfo_id = alls.cpinfo_id AND detail.ccp_id = alls.ccp_id AND detail.package = alls.package 
+			)calls LEFT OUTER JOIN
+			(
+				SELECT a.cpinfo_id ,IFNULL(a.ccp_id,a.cpinfo_id) AS ccp_id ,a.package, COUNT(DISTINCT a.mobile_imsi ) AS initnum
+				FROM sdk_init_log  a WHERE SUBSTR(create_time,1,10)= #{start_time} GROUP BY  a.cpinfo_id ,a.ccp_id,a.package
+			) inits
+			ON calls.cpinfo_id=inits.cpinfo_id AND calls.ccp_id=inits.ccp_id AND calls.package=inits.package 
+	
+			UNION 
+	
+			SELECT  inits.cpinfo_id,inits.ccp_id, inits.package,initnum,succ_calls,succ_users,fail_calls,fail_users,all_calls,all_users
+			FROM 
+			(
+			    SELECT  alls.cpinfo_id  ,alls.ccp_id,alls.package,detail.succ_calls,detail.succ_users,detail.fail_calls ,detail.fail_users ,alls.all_calls ,alls.all_users FROM 
+				(
+					SELECT CPINFO_ID,IFNULL(ccp_id,CPINFO_ID) AS ccp_id,package, COUNT(*) all_calls,COUNT(DISTINCT mobile_imsi) all_users FROM sdk_requst_log  
+					WHERE package IS NOT NULL AND SUBSTR(create_time,1,10)= #{start_time} GROUP BY CPINFO_ID,ccp_id,package
+				) alls LEFT OUTER JOIN
+				(
+					SELECT CPINFO_ID,IFNULL(ccp_id,CPINFO_ID) AS ccp_id,package, COUNT(*) AS succ_calls,COUNT(DISTINCT mobile_imsi) AS succ_users  ,0  AS fail_calls ,0 AS fail_users  FROM sdk_requst_log 
+					WHERE error_code = 0 AND SUBSTR(create_time,1,10)= #{start_time} GROUP BY CPINFO_ID,ccp_id,package
+				) detail
+				ON detail.cpinfo_id = alls.cpinfo_id AND detail.ccp_id=alls.ccp_id AND detail.package = alls.package 
+			)calls RIGHT OUTER JOIN
+			(
+				SELECT a.cpinfo_id ,IFNULL(a.ccp_id,a.cpinfo_id) AS ccp_id,a.package, COUNT(DISTINCT a.mobile_imsi ) AS initnum
+				FROM sdk_init_log a WHERE SUBSTR(create_time,1,10)= #{start_time} GROUP BY a.cpinfo_id ,a.ccp_id,a.package
+			) inits
+			ON calls.cpinfo_id=inits.cpinfo_id AND calls.ccp_id=inits.ccp_id AND calls.package=inits.package 
+		) aa LEFT JOIN cp_chstatus cph on cph.chid=aa.cpinfo_id and cph.ccpid=aa.ccp_id,cp_product p ,ch_company ch
+		WHERE aa.package = p.product_package  AND aa.cpinfo_id=ch.ch_id  
+		<if test="tag != null and tag !='' ">  
+       		and ifnull(cph.status,1)=#{tag}  
+    	</if>
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and aa.cpinfo_id= #{cp_id}  
+    	</if>
+    	<if test="product_id != null and product_id !='' ">  
+       		and p.product_id = #{product_id}  
+    	</if>
+	
+	<if test="cp_name != null and cp_name !='' ">  
+       		and ch.ch_name like CONCAT('%',#{cp_name},'%') 
+    	</if>
+	</select> 
+	
+	
+	 <select id="getAllCallStatList" parameterType="CallStat" resultType="CallStat">  	 
+				SELECT #{start_time} dater,aa.cpinfo_id AS cp_id,aa.ccp_id,ch_name AS cp_name,package,p.product_name,initnum,succ_calls,succ_users,all_calls,all_users
+		FROM (
+			SELECT  calls.cpinfo_id, calls.ccp_id,calls.package,initnum,succ_calls,succ_users, all_calls,all_users
+			FROM (
+	    		SELECT  alls.cpinfo_id  ,alls.ccp_id,alls.package ,detail.succ_calls,detail.succ_users,alls.all_calls ,alls.all_users FROM 
+				sp_cp_today_allcalls  alls LEFT OUTER JOIN
+				sp_cp_today_succalls detail
+				ON detail.cpinfo_id = alls.cpinfo_id AND detail.ccp_id = alls.ccp_id AND detail.package = alls.package 
+			)calls LEFT OUTER JOIN
+			sp_cp_today_inits  inits
+			ON calls.cpinfo_id=inits.cpinfo_id AND calls.ccp_id=inits.ccp_id AND calls.package=inits.package 
+	
+			UNION 
+	
+			SELECT  inits.cpinfo_id,inits.ccp_id, inits.package,initnum,succ_calls,succ_users,all_calls,all_users
+			FROM 
+			(
+			    SELECT  alls.cpinfo_id  ,alls.ccp_id,alls.package,detail.succ_calls,detail.succ_users,alls.all_calls ,alls.all_users FROM 
+				sp_cp_today_allcalls alls LEFT OUTER JOIN
+				sp_cp_today_succalls detail
+				ON detail.cpinfo_id = alls.cpinfo_id AND detail.ccp_id=alls.ccp_id AND detail.package = alls.package 
+			)calls RIGHT OUTER JOIN
+			sp_cp_today_inits inits
+			ON calls.cpinfo_id=inits.cpinfo_id AND calls.ccp_id=inits.ccp_id AND calls.package=inits.package 
+		) aa LEFT JOIN cp_chstatus cph ON cph.chid=aa.cpinfo_id AND cph.ccpid=aa.ccp_id,cp_product p ,ch_company ch
+		WHERE aa.package = p.product_package  AND aa.cpinfo_id=ch.ch_id  
+		<if test="tag != null and tag !='' ">  
+       		and ifnull(cph.status,1)=#{tag}  
+    	</if>
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and aa.cpinfo_id= #{cp_id}  
+    	</if>
+    	<if test="product_id != null and product_id !='' ">  
+       		and p.product_id = #{product_id}  
+    	</if>
+	
+	<if test="cp_name != null and cp_name !='' ">  
+       		and ch.ch_name like CONCAT('%',#{cp_name},'%') 
+    	</if>
+	</select> 
+	
+	
+	
+	  <select id="getRecStatList" parameterType="CallStat" resultType="CallStat">  	 
+		SELECT dater,cp_id,succ_calls,succ_users FROM(
+		SELECT SUBSTR(savetime,1,10) AS dater,cp_id,appfee_id,COUNT(mobile) AS succ_calls,COUNT(DISTINCT mobile) succ_users 
+		FROM sp_rec_data_detail WHERE status_code=1
+		GROUP BY SUBSTR(savetime,1,10) ,cp_id,appfee_id
+		) a WHERE   1=1
+		<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and (dater between #{start_time} and #{end_time} )
+    	</if>
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and cp_id = #{cp_id}  
+    	</if>
+		 ORDER BY dater
+				
+	</select> 
+	
+	
+	  <select id="getInitStatList" parameterType="CallStat" resultType="CallStat">  	 
+			SELECT init.dater,init.cpinfo_id,init.call_num as all_calls, init.call_usr as all_users ,
+			entr.succ_num as succ_calls ,succ_usr as succ_users FROM (
+			SELECT dater , cpinfo_id ,COUNT(mobile_imsi) AS succ_num,COUNT( DISTINCT mobile_imsi) AS succ_usr FROM
+			(
+			SELECT SUBSTR(a.create_time,1,10) dater , a.cpinfo_id,b.mobile,b.mobile_imsi,b.op ,b.province_id,b.province_name FROM sdk_init_log  a ,(
+			SELECT DISTINCT mobile,mobile_imsi,op ,province_id,province_name FROM sdk_user ) b
+			WHERE a.mobile_imsi=b.mobile_imsi
+			) da GROUP BY dater , cpinfo_id 
+			) entr ,
+			(
+			SELECT SUBSTR(create_time,1,10) AS dater ,cpinfo_id ,COUNT(MOBILE_IMSI) AS call_num,COUNT(DISTINCT MOBILE_IMSI ) AS call_usr
+			FROM sdk_init_log 
+			GROUP BY SUBSTR(create_time,1,10)  ,cpinfo_id 
+			) init
+			WHERE init.dater=entr.dater AND init.cpinfo_id=entr.cpinfo_id 
+
+		<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and (init.dater between #{start_time} and #{end_time} )
+    	</if>
+    	<if test="cp_id != null and cp_id !='' ">  
+       		and init.cpinfo_id = #{cp_id}  
+    	</if>
+		 ORDER BY dater
+				
+	</select> 
+	
+	  <select id="getRecDataList" parameterType="RecData" resultType="RecData">  	 
+		 select sp_name,feecode_name,spnumber,mobile,feecode_fee,msg as command,linkid,status_code,cp_id,appfee_id,savetime from sp_rec_data_detail 
+		  WHERE   1=1
+		<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+       		and SUBSTR(savetime,1,10) between #{start_time} and #{end_time} 
+    	</if>
+    	<if test="dater != null and dater !='' ">  
+       		and SUBSTR(savetime,1,10) = #{dater}  
+    	</if>
+    	<if test="mobile != null and mobile !='' ">  
+       		and mobile = #{mobile}  
+    	</if>
+    	<if test="feecode_number != null and feecode_number !='' ">  
+       		and spnumber = #{feecode_number}  
+    	</if>
+    	<if test="command != null and command !='' ">  
+       		and msg = #{command}  
+    	</if>
+		 ORDER BY id DESC
+				
+	</select> 
+	
+	<select id="qryRecDataStatListDetail" parameterType="RecDataStat" resultType="RecDataStat">  	 
+	
+		 SELECT  sp_name,feecode_name,spnumber,msg as command,cp_id,appfee_id,province_id,province_name,COUNT(DISTINCT linkid) AS succ_calls,COUNT(DISTINCT mobile) AS succ_users, COUNT(DISTINCT linkid)*IFNULL(feecode_fee,100)/100 AS fee 
+		  FROM sp_rec_data_detail  where status_code=1 and  1=1 
+			<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+	       		and (SUBSTR(savetime,1,10) between #{start_time} and #{end_time} )
+	    	</if>
+	    	<if test="dater != null and dater !='' ">  
+	       		and SUBSTR(savetime,1,10) = #{dater}  
+	    	</if>
+	    	<if test="spnumber != null and spnumber !='' ">  
+	       		and spnumber = #{spnumber}  
+	    	</if>
+	    	<if test="province_id != null and province_id !='' ">  
+	       		and province_id = #{province_id}  
+	    	</if>
+	    	<if test="command != null and command !='' ">  
+	       		and msg = #{command}  
+	    	</if>
+		GROUP BY  sp_name,feecode_name,spnumber,msg,cp_id,appfee_id,province_id,province_name
+						
+	</select> 
+	
+		<select id="qryRecDataStatListPro" parameterType="RecDataStat" resultType="RecDataStat">  	 
+	
+		 SELECT  sp_name,feecode_name,spnumber,msg as command,cp_id,province_id,province_name,COUNT(DISTINCT linkid) AS succ_calls,COUNT(DISTINCT mobile) AS succ_users, COUNT(DISTINCT linkid)*IFNULL(feecode_fee,100)/100 AS fee 
+		  FROM sp_rec_data_detail where status_code=1 and 1=1 
+			<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+	       		and (SUBSTR(savetime,1,10) between #{start_time} and #{end_time} )
+	    	</if>
+	    	<if test="dater != null and dater !='' ">  
+	       		and SUBSTR(savetime,1,10) = #{dater}  
+	    	</if>
+	    	<if test="spnumber != null and spnumber !='' ">  
+	       		and spnumber = #{spnumber}  
+	    	</if>
+	    	<if test="province_id != null and province_id !='' ">  
+	       		and province_id = #{province_id}  
+	    	</if>
+	    	<if test="command != null and command !='' ">  
+	       		and msg = #{command}  
+	    	</if>
+		GROUP BY  sp_name,feecode_name,spnumber,msg,cp_id,province_id,province_name
+						
+	</select> 
+	
+	<select id="qryRecDataStatListCh" parameterType="RecDataStat" resultType="RecDataStat">  	 
+	
+		 SELECT  sp_name,feecode_name,spnumber,msg as command,cp_id,COUNT(DISTINCT linkid) AS succ_calls,COUNT(DISTINCT mobile) AS succ_users, COUNT(DISTINCT linkid)*IFNULL(feecode_fee,100)/100 AS fee 
+		  FROM sp_rec_data_detail where status_code=1 and 1=1 
+			<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+	       		and (SUBSTR(savetime,1,10) between #{start_time} and #{end_time} )
+	    	</if>
+	    	<if test="dater != null and dater !='' ">  
+	       		and SUBSTR(savetime,1,10) = #{dater}  
+	    	</if>
+	    	<if test="spnumber != null and spnumber !='' ">  
+	       		and spnumber = #{spnumber}  
+	    	</if>
+	    	<if test="province_id != null and province_id !='' ">  
+	       		and province_id = #{province_id}  
+	    	</if>
+	    	<if test="command != null and command !='' ">  
+	       		and msg = #{command}  
+	    	</if>
+		GROUP BY  sp_name,feecode_name,spnumber,msg,cp_id
+						
+	</select> 
+	
+	<select id="qryRecDataStatListHis" parameterType="RecDataStat" resultType="RecDataStat">  	 
+		select s.*,sp_gsstatus from ( 
+			select dater,sp_id,sp_name,feecode_name,spnumber,command,sum(succ_calls) succ_calls,sum(succ_users) succ_users,sum(fee) fee from sp_cp_rec_stat where 1=1
+			<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+	       		and dater between #{start_time} and #{end_time} 
+	    	</if>
+	    	<if test="spnumber != null and spnumber !='' ">  
+	       		and spnumber = #{spnumber}  
+	    	</if>
+	    	<if test="command != null and command !='' ">  
+	       		and msg = #{command}  
+	    	</if>
+	    	<if test="sp_id != null and sp_id !='' ">  
+	       		and sp_id = #{sp_id}  
+	    	</if>	
+	    	GROUP BY  sp_name,feecode_name,spnumber,command
+	    )s INNER JOIN sp_company sp on sp.sp_id=s.sp_id 
+	    <if test="sp_gsstatus != null and sp_gsstatus !='' ">  
+	       	WHERE sp_gsstatus = #{sp_gsstatus}  
+	    </if>
+	</select>
+
+	
+		<select id="qryRecDataStatList" parameterType="RecDataStat" resultType="RecDataStat">  	 
+		select s.*,sp_gsstatus from ( 
+		 SELECT  sp_id,sp_name,feecode_name,spnumber,msg as command,COUNT(DISTINCT mobile,linkid) AS succ_calls,COUNT(DISTINCT mobile) AS succ_users, COUNT(DISTINCT mobile, linkid)*IFNULL(feecode_fee,100)/100 AS fee 
+		  FROM sp_rec_data_detail where status_code=1 
+			<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+	       		and (SUBSTR(savetime,1,10) between #{start_time} and #{end_time} )
+	    	</if>
+	    	<if test="dater != null and dater !='' ">  
+	       		and SUBSTR(savetime,1,10) = #{dater}  
+	    	</if>
+	    	<if test="spnumber != null and spnumber !='' ">  
+	       		and spnumber = #{spnumber}  
+	    	</if>
+	    	<if test="province_id != null and province_id !='' ">  
+	       		and province_id = #{province_id}  
+	    	</if>
+	    	<if test="command != null and command !='' ">  
+	       		and msg = #{command}  
+	    	</if>
+	    		<if test="sp_id != null and sp_id !='' ">  
+	       		and sp_id = #{sp_id}  
+	    	</if>	
+		GROUP BY  sp_name,feecode_name,spnumber,msg
+		)s INNER JOIN sp_company sp on sp.sp_id=s.sp_id 
+		<if test="sp_gsstatus != null and sp_gsstatus !='' ">  
+	       	WHERE sp_gsstatus = #{sp_gsstatus}  
+	    </if>				
+	</select> 
+	
+	<update id="updRecDataStatHis" parameterType="RecDataStat"> 
+		update sp_cp_rate_stat set income_calls=#{income_calls}, rate=#{rate}, fee=#{fee} 
+		where sp_id=#{sp_id} and feecode_number=#{feecode_number} and command=#{command} and dater=#{dater}
+	</update>
+	
+	<!-- 添加删除sp收入统计 -->
+	<insert id="saveRecDataStat" parameterType="RecDataStat">
+		INSERT INTO sp_cp_rec_stat (sp_id,sp_name,feecode_name,spnumber,command,succ_users,succ_calls,fee,dater)
+    	VALUES (#{sp_id},#{sp_name},#{feecode_name},#{feecode_number},#{command},#{income_user},#{income_calls},#{fee},#{dater})
+	</insert>
+	
+	<update id="updRecDataStat" parameterType="RecDataStat">
+		update sp_cp_rec_stat set succ_calls=#{income_calls} 
+    	where sp_id=#{sp_id} and dater=#{dater} and spnumber=#{feecode_number} and command=#{command} 
+	</update>
+	
+	 <delete id="delRecDataStat" parameterType="RecDataStat">
+    	 delete from sp_cp_rec_stat  where sp_id=#{sp_id} and dater=#{dater} and spnumber=#{feecode_number} and command=#{command}
+    </delete>
+	
+	<select id="getRecDataStatListHis" parameterType="RecDataStat" resultType="RecDataStat">  	 
+	select s.*,sp_gsstatus from ( 
+		SELECT  * FROM sp_cp_rate_stat WHERE 1=1
+			<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+	       		and (dater between #{start_time} and #{end_time} )
+	    	</if>
+	    	<if test="dater != null and dater !='' ">  
+	       		and  dater = #{dater}  
+	    	</if>
+	    	<if test="feecode_number != null and feecode_number !='' ">  
+	       		and feecode_number = #{feecode_number}  
+	    	</if>
+	       	<if test="command != null and command !='' ">  
+	       		and command = #{command}  
+	    	</if>	
+	    	
+	    	<if test="op != null and op !='' ">  
+	       		and op = #{op}  
+	    	</if>	
+	    	
+	    	<if test="dtype != null and dtype !='' ">  
+	       		and dtype = #{dtype}  
+	    	</if>	
+	    	
+	    	<if test="sp_id != null and sp_id !='' ">  
+	       		and sp_id = #{sp_id}  
+	    	</if>	
+	    	order by  dater DESC , rate DESC		
+	    	)s INNER JOIN sp_company sp on sp.sp_id=s.sp_id 
+	    	<if test="sp_gsstatus != null and sp_gsstatus !='' ">  
+	       		WHERE sp_gsstatus = #{sp_gsstatus}  
+	    	</if>		
+	</select> 
+	
+	
+	<select id="getRecDataStatListNew_11" parameterType="RecDataStat" resultType="RecDataStat">  	 
+		SELECT  dater,op,t.sp_id,t.sp_name,feecode_name,feecode_number,command,sp_gsstatus,
+		succ_calls,succ_users ,income_calls,
+		  feecode_fee,fee,income_user,ROUND(income_calls/succ_calls,2) AS rate FROM 
+		(
+		SELECT a.dater,a.op,a.sp_id,a.sp_name,a.feecode_name,a.feecode_number,a.command, 
+		IFNULL(a.succ_calls,1) AS succ_calls ,IFNULL(a.succ_users,0) AS succ_users ,IFNULL(b.succ_calls,0) AS income_calls,a.feecode_fee,IFNULL(b.fee,0) AS fee,IFNULL(b.succ_users,0) AS income_user  FROM 
+			(
+			SELECT SUBSTR(savetime,1,10) dater,op,sp_id,sp_name,feecode_name,feecode_number, command,fee AS feecode_fee,SUM(num) AS succ_calls,COUNT(DISTINCT imsi) AS succ_users
+			FROM mobile_filter_log WHERE check_stat=0 AND savetime between #{start_time} and #{end_time}
+			GROUP BY op,sp_id,feecode_number,command,fee
+			) a LEFT OUTER JOIN 
+			(
+			SELECT sp_id,spnumber, msg,COUNT(DISTINCT mobile, linkid)  AS succ_calls,COUNT( DISTINCT mobile, linkid)*IFNULL(feecode_fee,100)/100 fee,COUNT(DISTINCT mobile) AS succ_users
+			FROM sp_rec_data_detail WHERE status_code=1 AND savetime between #{start_time} and #{end_time}
+			GROUP BY sp_id,spnumber,msg
+			)b
+			ON a.sp_id=b.sp_id AND a.feecode_number = b.spnumber AND a.command =b.msg	) t  
+			INNER JOIN sp_company sp on sp.sp_id=t.sp_id WHERE 1=1
+	    	<if test="feecode_number != null and feecode_number !='' ">  
+	       		and feecode_number = #{feecode_number}  
+	    	</if>
+	       	<if test="command != null and command !='' ">  
+	       		and command = #{command}  
+	    	</if>	
+	    	<if test="sp_id != null and sp_id !='' ">  
+	       		and t.sp_id = #{sp_id}  
+	    	</if>	
+	    	<if test="op != null and op !='' ">  
+	       		and op = #{op}  
+	    	</if>		
+	    	<if test="sp_gsstatus != null and sp_gsstatus !='' ">  
+	       		and sp_gsstatus = #{sp_gsstatus}  
+	    	</if>		
+	    	order by rate DESC			
+	</select> 
+	
+	
+	<select id="getRecDataStatListNew" parameterType="RecDataStat" resultType="RecDataStat">  	 
+		SELECT  dater,op,t.sp_id,t.sp_name,feecode_name,feecode_number,command,sp_gsstatus,
+		succ_calls,succ_users ,income_calls,
+		  feecode_fee,fee,income_user,ROUND(income_calls/succ_calls,2) AS rate FROM 
+		(
+		SELECT a.dater,a.op,a.sp_id,a.sp_name,a.feecode_name,a.feecode_number,a.command, 
+		IFNULL(a.succ_calls,1) AS succ_calls ,IFNULL(a.succ_users,0) AS succ_users ,IFNULL(b.succ_calls,0) AS income_calls,a.feecode_fee,IFNULL(b.fee,0) AS fee,IFNULL(b.succ_users,0) AS income_user  FROM 
+			(
+			SELECT dater,op,sp_id,sp_name,feecode_name,feecode_number, command,feecode_fee,succ_calls,succ_users
+			FROM sp_cp_today_smsnum
+			) a LEFT OUTER JOIN 
+			(
+			SELECT sp_id,spnumber, msg, succ_calls,fee,succ_users
+			FROM sp_cp_today_recnum
+			)b
+			ON a.sp_id=b.sp_id AND a.feecode_number = b.spnumber AND a.command =b.msg	) t  
+			INNER JOIN sp_company sp on sp.sp_id=t.sp_id WHERE 1=1
+	    	
+	       	<if test="command != null and command !='' ">  
+	       		and command = #{command}  
+	    	<if test="feecode_number != null and feecode_number !='' ">  
+	       		and feecode_number = #{feecode_number}  
+	    	</if></if>	
+	    	<if test="sp_id != null and sp_id !='' ">  
+	       		and t.sp_id = #{sp_id}  
+	    	</if>	
+	    	<if test="op != null and op !='' ">  
+	       		and op = #{op}  
+	    	</if>		
+	    	<if test="sp_gsstatus != null and sp_gsstatus !='' ">  
+	       		and sp_gsstatus = #{sp_gsstatus}  
+	    	</if>		
+	    	order by rate DESC			
+	</select> 
+	
+	
+	
+	<select id="getRecDataStatList" parameterType="RecDataStat" resultType="RecDataStat">  	 
+		SELECT  dater,op,t.sp_id,t.sp_name,feecode_name,feecode_number,command,sp_gsstatus,
+		succ_calls,succ_users ,income_calls,
+		  feecode_fee,fee,income_user,ROUND(income_calls/succ_calls,2) AS rate FROM 
+		(
+		SELECT a.dater,a.op,a.sp_id,a.sp_name,a.feecode_name,a.feecode_number,a.command, 
+		IFNULL(a.succ_calls,1) AS succ_calls ,IFNULL(a.succ_users,0) AS succ_users ,IFNULL(b.succ_calls,0) AS income_calls,a.feecode_fee,IFNULL(b.fee,0) AS fee,IFNULL(b.succ_users,0) AS income_user  FROM 
+			(
+			SELECT dater,op,sp_id,sp_name,feecode_name,feecode_number, command,feecode_fee,succ_calls,succ_users
+			FROM sp_cp_today_smsnum
+			) a LEFT OUTER JOIN 
+			(
+			SELECT sp_id,spnumber, msg, succ_calls,fee,succ_users
+			FROM sp_cp_today_recnum
+			)b
+			ON a.dater=b.dater AND a.sp_id=b.sp_id AND a.feecode_number = b.spnumber AND a.command =b.msg	) t  
+			INNER JOIN sp_company sp on sp.sp_id=t.sp_id WHERE 1=1
+	    	<if test="feecode_number != null and feecode_number !='' ">  
+	       		and feecode_number = #{feecode_number}  
+	    	</if>
+	       	<if test="command != null and command !='' ">  
+	       		and command = #{command}  
+	    	</if>	
+	    	<if test="sp_id != null and sp_id !='' ">  
+	       		and t.sp_id = #{sp_id}  
+	    	</if>	
+	    	<if test="op != null and op !='' ">  
+	       		and op = #{op}  
+	    	</if>		
+	    	<if test="sp_gsstatus != null and sp_gsstatus !='' ">  
+	       		and sp_gsstatus = #{sp_gsstatus}  
+	    	</if>		
+	    	order by rate DESC			
+	</select> 
+	
+		
+	<select id="getRecDataStatList_11" parameterType="RecDataStat" resultType="RecDataStat">  	 
+		SELECT  dater,op,t.sp_id,t.sp_name,feecode_name,feecode_number,command,sp_gsstatus,
+		succ_calls,succ_users ,income_calls,
+		  feecode_fee,fee,income_user,ROUND(income_calls/succ_calls,2) AS rate FROM 
+		(
+		SELECT a.dater,a.op,a.sp_id,a.sp_name,a.feecode_name,a.feecode_number,a.command, 
+		IFNULL(a.succ_calls,1) AS succ_calls ,IFNULL(a.succ_users,0) AS succ_users ,IFNULL(b.succ_calls,0) AS income_calls,a.feecode_fee,IFNULL(b.fee,0) AS fee,IFNULL(b.succ_users,0) AS income_user  FROM 
+			(
+			SELECT SUBSTR(savetime,1,10) dater,op,sp_id,sp_name,feecode_name,feecode_number, command,fee AS feecode_fee,SUM(num) AS succ_calls,COUNT(DISTINCT imsi) AS succ_users
+			FROM mobile_filter_log WHERE check_stat=0 AND SUBSTR(savetime,1,10) = #{start_time} 
+			GROUP BY SUBSTR(savetime,1,10) ,op,sp_id,sp_name,feecode_name,feecode_number, command,fee
+			) a LEFT OUTER JOIN 
+			(
+			SELECT SUBSTR(savetime,1,10) dater,sp_id,spnumber, msg,COUNT(DISTINCT mobile, linkid)  AS succ_calls,COUNT( DISTINCT mobile, linkid)*IFNULL(feecode_fee,100)/100 fee,COUNT(DISTINCT mobile) AS succ_users
+			FROM sp_rec_data_detail WHERE status_code=1 AND SUBSTR(savetime,1,10) = #{start_time} 
+			GROUP BY SUBSTR(savetime,1,10) ,sp_id,spnumber, msg
+			)b
+			ON a.dater=b.dater AND a.sp_id=b.sp_id AND a.feecode_number = b.spnumber AND a.command =b.msg	) t  
+			INNER JOIN sp_company sp on sp.sp_id=t.sp_id WHERE 1=1
+	    	<if test="feecode_number != null and feecode_number !='' ">  
+	       		and feecode_number = #{feecode_number}  
+	    	</if>
+	       	<if test="command != null and command !='' ">  
+	       		and command = #{command}  
+	    	</if>	
+	    	<if test="sp_id != null and sp_id !='' ">  
+	       		and t.sp_id = #{sp_id}  
+	    	</if>	
+	    	<if test="op != null and op !='' ">  
+	       		and op = #{op}  
+	    	</if>		
+	    	<if test="sp_gsstatus != null and sp_gsstatus !='' ">  
+	       		and sp_gsstatus = #{sp_gsstatus}  
+	    	</if>		
+	    	order by rate DESC			
+	</select> 
+	
+	
+	<select id="getRecDataProvinceStatList" parameterType="RecDataStat" resultType="RecDataStat">  	 
+		SELECT  dater,op,sp_id,sp_name,feecode_name,feecode_number,command,province_name,
+		succ_calls,succ_users ,income_calls,
+		feecode_fee,fee,income_user,ROUND(income_calls/succ_calls,2) AS rate FROM 
+		(
+		SELECT a.dater,op,a.sp_id,a.sp_name,a.feecode_name,a.feecode_number,a.command,a.province,
+		IFNULL(a.succ_calls,1) AS succ_calls ,a.succ_users ,IFNULL(b.succ_calls,0) AS income_calls,a.feecode_fee,IFNULL(b.fee,0) AS fee,IFNULL(b.succ_users,0) AS income_user  FROM 
+			(
+			SELECT SUBSTR(savetime,1,10) dater,op,sp_id,sp_name,feecode_name,feecode_number, command,province,fee AS feecode_fee,SUM(num) AS succ_calls,COUNT(DISTINCT imsi) AS succ_users
+			FROM mobile_filter_log WHERE check_stat=0 AND SUBSTR(savetime,1,10) = #{start_time} 
+			GROUP BY SUBSTR(savetime,1,10) ,op,sp_id,sp_name,feecode_name,feecode_number, command,province,fee
+			) a LEFT OUTER JOIN 
+			(
+			SELECT SUBSTR(savetime,1,10) dater,sp_id,spnumber, msg,province_id,COUNT(DISTINCT mobile, linkid) AS succ_calls,COUNT( DISTINCT mobile, linkid)*IFNULL(feecode_fee,100)/100  fee,COUNT(DISTINCT mobile) AS succ_users
+			FROM sp_rec_data_detail WHERE status_code=1 AND SUBSTR(savetime,1,10) = #{start_time} 
+			GROUP BY SUBSTR(savetime,1,10) ,sp_id,spnumber, msg,province_id
+			)b
+			ON a.dater=b.dater AND a.sp_id=b.sp_id AND a.feecode_number = b.spnumber AND a.command =b.msg AND a.province=b.province_id ) t ,
+		platform_province p
+			
+	WHERE t.province=p.province_id  
+	
+	    	<if test="feecode_number != null and feecode_number !='' ">  
+	       		and feecode_number = #{feecode_number}  
+	    	</if>
+	       	<if test="command != null and command !='' ">  
+	       		and command = #{command}  
+	    	</if>
+	    	<if test="sp_id != null and sp_id !='' ">  
+	       		and sp_id = #{sp_id}  
+	    	</if>		
+	    	order by rate DESC			
+	</select> 
+	
+	<select id="getSmsFilterStat" parameterType="SmsFilterStat" resultType="SmsFilterStat">
+    	SELECT IFNULL(ccp_id,cp_id) AS cp_id,appfee_id,filter_port,filter_content ,COUNT(DISTINCT imsi) AS filterUsers,COUNT(imsi) AS filterNum FROM
+		sdk_sms_filter_report  WHERE 1=1
+		
+		<if test="start_time != null and start_time !='' and end_time != null and end_time !='' ">  
+	       		and (SUBSTR(savetime,1,10) between #{start_time} and #{end_time} )
+	    	</if>
+	    	
+	GROUP BY cp_id,ccp_id,appfee_id,filter_port,filter_content
+	ORDER BY filter_content
+ 
+    </select>
+    
+	<select id="getSmsFilterCpStat_11" parameterType="SmsFilterStat" resultType="SmsFilterStat">
+		SELECT #{start_time} dater,IFNULL(ccp_id,cp_id) AS cp_id,COUNT(DISTINCT imsi) filterUsers,COUNT(imsi) filterNum FROM sdk_sms_filter_report 
+	     WHERE savetime between #{start_time} and #{end_time} GROUP BY cp_id,ccp_id 
+    </select>
+    	<select id="getSmsFilterCpStat" parameterType="SmsFilterStat" resultType="SmsFilterStat">
+		  select dater,cp_id, filterUsers, filterNum from sp_cp_today_smsfilter
+    </select>
+    
+    <select id="getSmsFilterCpStathis" parameterType="SmsFilterStat" resultType="SmsFilterStat">
+    	SELECT dater,IFNULL(ccpid,cp_id) cp_id, filterNum,filterUsers from sp_cp_smsfilter_stat where dater between #{start_time} and #{end_time} 
+    </select>
+    
+    <select id="getSmsReportStathis" parameterType="SmsFilterStat" resultType="SmsFilterStat">
+    	SELECT dater,IFNULL(ccp_id,cpinfo_id) cp_id,succ_num filterNum,rep_users filterUsers from sp_cp_sendreport_stat where dater between #{start_time} and #{end_time} 
+    </select>
+    
+    <select id="getSmsReportStat_11" parameterType="SmsFilterStat" resultType="SmsFilterStat">
+    SELECT #{start_time} dater,IFNULL(ccp_id,cpinfo_id) cp_id,COUNT(DISTINCT mobile_imsi) filterUsers,COUNT(mobile_imsi) filterNum FROM
+		sdk_sms_report_log WHERE call_id NOT IN ('init','10086','10010','10000') AND sms_status='1008'	AND create_time between #{start_time} and #{end_time} 
+		GROUP BY cpinfo_id ,ccp_id
+    </select>
+    
+     <select id="getSmsReportStat" parameterType="SmsFilterStat" resultType="SmsFilterStat">
+	    select dater,cp_id, filterUsers, filterNum from sp_cp_today_smsreport
+    </select>
+    
+    
+	<!--auto_level_ratio  begin-->
+    <select id="listAutoLevelRatio" parameterType="AutoLevelRatio" resultType="AutoLevelRatio">
+    	select id,level,ratio,create_time,create_name from auto_level_ratio where 1=1
+    	<if test="id!=null">
+    		and id=#{id}
+    	</if>
+    	<if test="level!=null">
+    		and level=#{level}
+    	</if>
+    	<if test="ratio!=null">
+    		and ratio=#{ratio}
+    	</if>
+    	<if test="create_time!=null and create_time!=''">
+    		and create_time=#{create_time}
+    	</if>
+    	<if test="create_name!=null and create_name!=''">
+    		and create_name=#{create_name}
+    	</if>
+    	order by id desc
+    </select>
+    
+    <insert id="addAutoLevelRatio" parameterType="AutoLevelRatio">
+    	INSERT INTO AUTO_LEVEL_RATIO (ID,LEVEL,RATIO,CREATE_TIME,CREATE_NAME)
+    	VALUES (#{id},#{level},#{ratio},now(),#{create_name}) 
+    </insert>
+    
+    <update id="updateAutoLevelRatio" parameterType="AutoLevelRatio">
+    	UPDATE AUTO_LEVEL_RATIO SET LEVEL=#{level},RATIO=#{ratio},CREATE_TIME=now(),CREATE_NAME=#{create_name} where id=#{id}
+    </update>
+    <delete id="deleteAutoLevelRatio" parameterType="AutoLevelRatio">
+    	 delete from AUTO_LEVEL_RATIO  where id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </delete>
+    <!--auto_level_ratio end -->
+    
+	<!--auto_cmd_level begin  -->
+	<delete id="deleteAutoCmdLevel" parameterType="AutoCmdLevel">
+    	 delete from auto_cmd_level  where id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </delete>
+	<select id="listAutoCmdLevel" parameterType="AutoCmdLevel" resultType="AutoCmdLevel">
+		select id,feecode_number,command,level,limit_num,call_num,op,deal_type,status,create_time,create_name from auto_cmd_level where 1=1
+		<if test="id != null">
+			and id=#{id}
+		</if>
+		<if test="feecode_number != null and feecode_number != ''">
+			and feecode_number=#{feecode_number}
+		</if>
+		<if test="command != null and command != ''">
+			and command=#{command}
+		</if>
+		<if test="level != null">
+			and level=#{level}
+		</if>
+		<if test="limit_num != null">
+			and limit_num =#{limit_num}
+		</if>
+		<if test="call_num != null">
+			and call_num = #{call_num}
+		</if>
+		<if test="deal_type != null">
+			and deal_type = #{deal_type}
+		</if>
+		<if test="create_time != null and create_time !='' ">
+			and create_time = #{create_time}
+		</if>
+		<if test="status != null">
+			and status = #{status}
+		</if>
+		<if test="create_name != null and create_name != ''">
+			and create_name = #{create_name}
+		</if>
+		order by level asc 
+	</select>
+	
+	<insert id="addAutoCmdLevel" parameterType="AutoCmdLevel" >
+		insert into auto_cmd_level(id,feecode_number,command,level,limit_num,call_num,op,deal_type,create_time,create_name)
+		VALUES(#{id},#{feecode_number},#{command},#{level},#{limit_num},#{call_num},#{op}, #{deal_type},now(),#{create_name})
+	</insert>
+	
+	<update id="updateAutoCmdLevel" parameterType="AutoCmdLevel">
+		UPDATE auto_cmd_level SET 
+		feecode_number=#{feecode_number},
+		command=#{command},
+		op=#{op},
+		level=#{level},
+		limit_num=#{limit_num},
+		deal_type=#{deal_type},
+		status=#{status},
+		create_time=now(),
+		create_name=#{create_name}
+		WHERE id=#{id}
+	</update>
+	<update id="closeOrOpenAutoCmdLevel" parameterType="AutoCmdLevel"  >
+        update auto_cmd_level set status=#{status} where id in
+        <foreach item="item" index="index" collection="ids" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+    </update>
+	<!--auto_cmd_level end  -->
+	
+	<!-- data_dictionary begin -->
+	<select id="listDataDictionary" parameterType="DataDictionary" resultType="DataDictionary">
+		select id,code,swtichs,time,daymaxdata,monthmaxdata,paydata,appf_id,cpids,isall from data_dictionary WHERE 1=1
+		<if test="id != null">
+			and id=#{id}
+		</if>
+		<if test="code != null">
+			and code =#{code}
+		</if>
+		<if test="swtichs != null">
+			and swtichs = #{swtichs}
+		</if>
+		<if test="time != null">
+			and time=#{time}
+		</if>
+		<if test="daymaxdata != null">
+			and daymaxdata=#{daymaxdata}
+		</if>
+		<if test="monthmaxdata != null">
+			and monthmaxdata=#{monthmaxdata}
+		</if>
+		<if test="paydata != null">
+			and paydata = #{paydata}
+		</if>
+		<if test="appf_id != null">
+			and appf_id = #{appf_id}
+		</if>
+		<if test="cpids != null and cpids != ''">
+			and cpids = #{cpids}
+		</if>
+	</select>
+	
+	<insert id="addDataDictionary" parameterType="DataDictionary">
+		insert into data_dictionary (code,swtichs,time,daymaxdata,monthmaxdata,paydata,appf_id,cpids,isall) 
+		values(#{code},#{swtichs},#{time},#{daymaxdata},#{monthmaxdata},#{paydata},#{appf_id},#{cpids},#{isall})
+	</insert>
+	<update id="updateDataDictionary" parameterType="DataDictionary">
+		update data_dictionary set 
+		code=#{code},
+		swtichs=#{swtichs},
+		time=#{time},
+		daymaxdata=#{daymaxdata},
+		monthmaxdata=#{monthmaxdata},
+		paydata=#{paydata},
+		appf_id =#{appf_id},
+		isall =#{isall},
+		cpids=#{cpids}
+		where id=#{id}
+	</update>
+	<delete id="deleteDataDictionary" parameterType="DataDictionary">
+		 delete from data_dictionary  where id in
+        <foreach item="item" index="index" collection="array" 
+                         open="(" separator="," close=")">
+                  #{item}
+        </foreach>
+	</delete>
+	<!-- data_dictionary begin end -->
+	
+	
+	<!-- SJM: c.ch_name, m.ccp_id, m.dater, m.cp, m.feecode_number, m.sp_id, m.command, m.succ_calls, m.succ_users, s.succ_users-->
+
+	<!-- <select id="listRecCallAllDateHis" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		select a.cp_id,a.ch_name,c.initnum, a.ccp_id,a.feecode_number,a.command,a.succ_calls,a.succ_num,r.rate, a.dater,a.sp_id,ifnull(ROUND(r.rates*a.succ_num/rh.succ_num,2),'0.00') rates
+		 from sp_cp_smsreport_stat a
+		 LEFT JOIN (select s.sp_id,s.command,s.feecode_number,s.rate,(s.income_calls*c.command_share) rates  from sp_cp_rate_stat s 
+					LEFT JOIN(
+						select c.command, f.feecode_number, f.sp_id, c.command_share from sp_command c,sp_feecode f WHERE c.feecode_id=f.feecode_id  GROUP BY feecode_number,command,sp_id
+					) c on c.command=s.command and c.feecode_number=s.feecode_number and c.sp_id=s.sp_id 
+				where dater=#{start_time} and dtype=2) r on a.sp_id=r.sp_id and a.command=r.command and a.feecode_number=r.feecode_number 
+		 LEFT JOIN (select cp_id,ccp_id,initnum from sp_cp_call_stat where dater=#{start_time} GROUP BY cp_id,ccp_id) c on a.cp_id=c.cp_id and a.ccp_id=c.ccp_id 
+		 LEFT JOIN (select cmd,spnumber,succ_num from sdk_sms_report_his where dater=#{start_time}) rh on rh.cmd=a.command and rh.spnumber=a.feecode_number
+		where a.dater=#{start_time} 
+	</select> -->
+	<select id="listRecCallAllDateHis" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		SELECT  (ifnull(ROUND(r.rates*a.u/b.succ_num,2),'0.00')) rates,
+		a.cp_id,a.sp_id,a.ch_name,c.initnum , a.ccp_id,a.dater,a.feecode_number,a.succ_calls, a.succ_num/a.succ_calls rate,a.command,a.succ_num  FROM
+		(
+		SELECT sp_id,cp_id,ch_name, ccp_id,dater,feecode_number ,command, succ_calls , succ_num ,rep_users AS n FROM  sp_cp_smsreport_stat WHERE  dater ='2015-06-16' AND cp_id=2100 and ccp_id='100_22_3'
+		)a LEFT OUTER JOIN 
+		(
+		SELECT DISTINCT dater ,spnumber ,cmd,succ_num,rep_users FROM sdk_sms_report_his WHERE op in(1,2,3)  AND dater ='2015-06-16'
+		)b ON a.dater =b.dater AND a.feecode_number=b.spnumber AND a.command=b.cmd
+		 LEFT JOIN (select cp_id,ccp_id,initnum from sp_cp_call_stat where dater >'2015-06-16' GROUP BY cp_id,ccp_id) c on a.cp_id=c.cp_id and a.ccp_id=c.ccp_id 
+		
+		LEFT JOIN (select s.sp_id,s.command,s.feecode_number,s.rate,(s.fee) rates  from sp_cp_rate_stat s where dater='2015-06-16' and dtype=2
+		) r on a.sp_id=r.sp_id and a.command=r.command and a.feecode_number=r.feecode_number 
+
+	</select>
+	
+	
+	<!-- <if test="cp_id != null and cp_id !='' "> and cpinfo_id=#{cp_id} </if>  -->
+	<select id="listRecCallAllDate" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		select a.cp_id,a.ch_name,a.ccp_id,c.initnum,a.feecode_number,a.command,a.succ_calls,a.succ_num,ifnull(b.rate,'0.00') rate,(ifnull(ROUND(b.rates*a.succ_num/s.succ_num,2),'0.00')) rates, a.dater from (
+			SELECT ifnull(m.ccp_id,m.cp) ccp_id,c.ch_name, m.dater, m.cp cp_id,m.fee, m.feecode_number, m.sp_id,m.sp_name, m.command, m.succ_calls, m.succ_users, s.succ_num FROM(
+				SELECT SUBSTR(savetime,1,10) dater,cp,sp_id,sp_name, ccp_id,feecode_number,fee,command,SUM(num) AS succ_calls,COUNT(DISTINCT imsi) AS succ_users
+				FROM mobile_filter_log WHERE check_stat=0 AND savetime between #{start_time} and #{end_time}
+				GROUP BY ccp_id,cp,sp_id,feecode_number, command
+			) m LEFT OUTER JOIN(
+				SELECT cpinfo_id,ccp_id,spnumber,cmd,COUNT(DISTINCT mobile_imsi) AS succ_num
+				FROM sdk_sms_report_log WHERE create_time between #{start_time} and #{end_time}
+				GROUP BY cpinfo_id,ccp_id,cmd,spnumber
+			) s on m.ccp_id=s.ccp_id and m.cp=s.cpinfo_id and m.command=s.cmd and m.feecode_number=s.spnumber
+			LEFT OUTER JOIN ch_company c on c.ch_id=m.cp
+		)a LEFT OUTER JOIN(
+			select m.feecode_number,m.sp_id,m.sp_name, m.command, m.succ_calls, m.succ_users, d.income_calls, ROUND(d.income_calls/m.succ_calls,2) AS rate,(d.income_calls*c.command_share) rates FROM(
+				SELECT cp,sp_id,sp_name,ccp_id,feecode_number, command,SUM(num) AS succ_calls,COUNT(DISTINCT imsi) AS succ_users
+				FROM mobile_filter_log WHERE check_stat=0 AND savetime between #{start_time} and #{end_time}
+				GROUP BY sp_id,feecode_number, command
+			) m LEFT OUTER JOIN(
+				SELECT sp_id,spnumber, msg,COUNT(DISTINCT mobile, linkid)  AS income_calls,COUNT(DISTINCT mobile) AS income_users
+				FROM sp_rec_data_detail WHERE status_code=1 AND savetime between #{start_time} and #{end_time}
+				GROUP BY sp_id,spnumber, msg
+			) d on m.sp_id=d.sp_id AND m.feecode_number = d.spnumber AND m.command =d.msg LEFT OUTER JOIN(
+				select c.command, f.feecode_number, f.sp_id, c.command_share from sp_command c,sp_feecode f WHERE c.feecode_id=f.feecode_id  GROUP BY feecode_number,command,sp_id
+			) c on c.command=m.command and c.feecode_number=m.feecode_number and c.sp_id=m.sp_id 
+		)b on a.feecode_number=b.feecode_number and a.command=b.command and a.sp_id=b.sp_id and a.sp_name=b.sp_name LEFT OUTER JOIN(
+			SELECT a.cpinfo_id cp_id,IFNULL(a.ccp_id,a.cpinfo_id) AS ccp_id , COUNT(DISTINCT a.mobile_imsi ) AS initnum 
+			FROM sdk_init_log a 
+			WHERE SUBSTR(a.create_time,1,10)= create_time between #{start_time} and #{end_time}
+			GROUP BY a.cpinfo_id ,a.ccp_id
+		)c on a.ccp_id=c.ccp_id and a.cp_id=c.cp_id LEFT OUTER JOIN(
+			SELECT spnumber,cmd,COUNT(DISTINCT mobile_imsi) AS succ_num
+			FROM sdk_sms_report_log WHERE  create_time between #{start_time} and #{end_time}
+			GROUP BY cmd,spnumber
+		)s on s.spnumber=a.feecode_number and s.cmd=a.command
+	</select>
+	
+	
+	<select id="exportListRecCallAllDate" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		select a.cp_id,a.ccp_id,a.initnum,a.ch_name,sum(a.succ_calls) succ_calls,sum(a.succ_num) succ_num,sum(a.rates) rates, a.dater from(
+			select a.cp_id,a.ch_name,a.ccp_id,c.initnum,a.feecode_number,a.command,a.succ_calls,a.succ_num,ifnull(b.rate,'0.00') rate,(ifnull(ROUND(b.rates*a.succ_num/s.succ_num,2),'0.00')) rates, a.dater from (
+				SELECT ifnull(m.ccp_id,m.cp) ccp_id,c.ch_name, m.dater, m.cp cp_id,m.fee, m.feecode_number, m.sp_id,m.sp_name, m.command, m.succ_calls, m.succ_users, s.succ_num FROM(
+					SELECT SUBSTR(savetime,1,10) dater,cp,sp_id,sp_name, ccp_id,feecode_number,fee,command,SUM(num) AS succ_calls,COUNT(DISTINCT imsi) AS succ_users
+					FROM mobile_filter_log WHERE check_stat=0 AND savetime between #{start_time} and #{end_time}
+					GROUP BY ccp_id,cp,sp_id,feecode_number, command
+				) m LEFT OUTER JOIN(
+					SELECT cpinfo_id,ccp_id,spnumber,cmd,COUNT(DISTINCT mobile_imsi) AS succ_num
+					FROM sdk_sms_report_log WHERE create_time between #{start_time} and #{end_time}
+					GROUP BY cpinfo_id,ccp_id,cmd,spnumber
+				) s on m.ccp_id=s.ccp_id and m.cp=s.cpinfo_id and m.command=s.cmd and m.feecode_number=s.spnumber
+				LEFT OUTER JOIN ch_company c on c.ch_id=m.cp
+			)a LEFT OUTER JOIN(
+				select m.feecode_number,m.sp_id,m.sp_name, m.command, m.succ_calls, m.succ_users, d.income_calls, ROUND(d.income_calls/m.succ_calls,2) AS rate,(d.income_calls*c.command_share) rates FROM(
+					SELECT cp,sp_id,sp_name,ccp_id,feecode_number, command,SUM(num) AS succ_calls,COUNT(DISTINCT imsi) AS succ_users
+					FROM mobile_filter_log WHERE check_stat=0 AND savetime between #{start_time} and #{end_time}
+					GROUP BY sp_id,feecode_number, command
+				) m LEFT OUTER JOIN(
+					SELECT sp_id,spnumber, msg,COUNT(DISTINCT mobile, linkid)  AS income_calls,COUNT(DISTINCT mobile) AS income_users
+					FROM sp_rec_data_detail WHERE status_code=1 AND savetime between #{start_time} and #{end_time}
+					GROUP BY sp_id,spnumber, msg
+				) d on m.sp_id=d.sp_id AND m.feecode_number = d.spnumber AND m.command =d.msg LEFT OUTER JOIN(
+					select c.command, f.feecode_number, f.sp_id, c.command_share from sp_command c,sp_feecode f WHERE c.feecode_id=f.feecode_id  GROUP BY feecode_number,command,sp_id
+				) c on c.command=m.command and c.feecode_number=m.feecode_number and c.sp_id=m.sp_id 
+			)b on a.feecode_number=b.feecode_number and a.command=b.command and a.sp_id=b.sp_id and a.sp_name=b.sp_name LEFT OUTER JOIN(
+				SELECT a.cpinfo_id cp_id,IFNULL(a.ccp_id,a.cpinfo_id) AS ccp_id , COUNT(DISTINCT a.mobile_imsi ) AS initnum 
+				FROM sdk_init_log a 
+				WHERE SUBSTR(a.create_time,1,10)= create_time between #{start_time} and #{end_time}
+				GROUP BY a.cpinfo_id ,a.ccp_id
+			)c on a.ccp_id=c.ccp_id and a.cp_id=c.cp_id LEFT OUTER JOIN(
+				SELECT spnumber,cmd,COUNT(DISTINCT mobile_imsi) AS succ_num
+				FROM sdk_sms_report_log WHERE  create_time between #{start_time} and #{end_time}
+				GROUP BY cmd,spnumber
+			)s on s.spnumber=a.feecode_number and s.cmd=a.command
+		) a GROUP BY a.cp_id,a.ccp_id,a.ch_name,a.dater
+	</select>
+	
+	
+	<select id="exportListRecCallAllDateHis" parameterType="RecCallAllDate" resultType="RecCallAllDate" >
+		select a.cp_id,a.ccp_id,a.initnum,a.ch_name,sum(a.succ_calls) succ_calls,sum(a.succ_num) succ_num,sum(a.rates) rates, a.dater from(
+			select a.cp_id,a.ch_name,c.initnum, a.ccp_id,a.feecode_number,a.command,a.succ_calls,a.succ_num,r.rate, a.dater,a.sp_id,(r.rates*a.succ_num/rh.succ_num) rates
+			 from sp_cp_smsreport_stat a
+			 LEFT JOIN (select s.sp_id,s.command,s.feecode_number,s.rate,(s.income_calls*c.command_share) rates  from sp_cp_rate_stat s 
+						LEFT JOIN(
+							select c.command, f.feecode_number, f.sp_id, c.command_share from sp_command c,sp_feecode f WHERE c.feecode_id=f.feecode_id  GROUP BY feecode_number,command,sp_id
+						) c on c.command=s.command and c.feecode_number=s.feecode_number and c.sp_id=s.sp_id 
+					where dater=#{start_time} and dtype=2) r on a.sp_id=r.sp_id and a.command=r.command and a.feecode_number=r.feecode_number 
+			 LEFT JOIN (select cp_id,ccp_id,initnum from sp_cp_call_stat where dater=#{start_time} GROUP BY cp_id,ccp_id) c on a.cp_id=c.cp_id and a.ccp_id=c.ccp_id 
+			 LEFT JOIN (select cmd,spnumber,succ_num from sdk_sms_report_his where dater=#{start_time}) rh on rh.cmd=a.command and rh.spnumber=a.feecode_number
+			where a.dater=#{start_time} 
+		) a GROUP BY a.cp_id,a.ccp_id,a.ch_name,a.dater
+	</select>
+	
+	<!-- sjm: end -->
+	
+	
+	<!-- SpProvinceControl -->
+	 <select id="listSpProvinceControlList" parameterType="SpProvinceControl" resultType="SpProvinceControl">
+    	select province_id,province_name,stat,stat_out,stat_spe,update_time,update_name from sp_province_control where 1=1
+
+    </select>
+    
+    <update id="updateSpProvinceControl" parameterType="SpProvinceControl">
+		update sp_province_control set 
+		<if test="stat != null">
+		stat=#{stat},
+		</if>
+		<if test="stat_out != null">
+		stat_out=#{stat_out},
+		</if>
+		<if test="stat_spe != null">
+		stat_spe=#{stat_spe},
+		</if>
+		update_time=NOW(),
+		update_name=#{update_name}
+		where province_id=#{province_id}
+	</update>
+	
+</mapper>
